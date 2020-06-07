@@ -1,10 +1,11 @@
 'use strict';
 
 var ADS_NUMBER = 8;
-var MAP_WIDTH = 1200;
-var MAP_HEIGHT = 704;
 var LOCATION_TOP = 130;
 var LOCATION_BOTTOM = 630;
+
+var PIN_WIDTH = 50;
+var PIN_HEIGHT = 70;
 
 var advertTitles = ['Уютная хата', 'Милый домик', 'Проклятый старый дом', 'Клёвое бунгало', 'Шикарный дворец', 'Унылая хрущевка', 'Квартирка в многоэтажке'];
 var checkTimes = ['12:00', '13:00', '14:00'];
@@ -20,6 +21,12 @@ var advertDescriptions = [
   'Задача организации, в особенности же рамки и место обучения кадров требуют от нас анализа модели развития.',
 ];
 var advertPictures = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
+
+var pinTemplate = document.querySelector('#pin').content;
+var pinList = document.querySelector('.map__pins');
+
+var mapWidth = pinList.offsetWidth;
+var mapHeight = pinList.offsetHeight;
 
 var getRandomInt = function (min, max) {
   var rand = min + Math.random() * (max + 1 - min);
@@ -39,15 +46,15 @@ function shuffleArray(array) {
   return shuffledArray;
 }
 
-var generateAdvert = function (index) {
+var createAdvert = function (index) {
   return {
     author: {
       avatar: 'img/avatars/user0' + index + '.png',
     },
     offer: {
       title: advertTitles[getRandomInt(0, advertTitles.length - 1)],
-      address: getRandomInt(1, MAP_WIDTH - 1) + ', ' + getRandomInt(1, MAP_HEIGHT - 1),
-      price: getRandomInt(100, 10000),
+      address: getRandomInt(1, mapWidth - 1) + ', ' + getRandomInt(1, mapHeight - 1),
+      price: getRandomInt(1, 100000),
       type: housingTypes[getRandomInt(0, housingTypes.length - 1)],
       rooms: getRandomInt(1, 3),
       guests: getRandomInt(0, 2),
@@ -58,22 +65,44 @@ var generateAdvert = function (index) {
       photos: shuffleArray(advertPictures).slice(getRandomInt(0, advertPictures.length - 1)),
     },
     location: {
-      x: getRandomInt(1, MAP_WIDTH - 1),
-      y: getRandomInt(LOCATION_TOP, LOCATION_BOTTOM),
+      x: getRandomInt(0, mapWidth) - PIN_WIDTH,
+      y: getRandomInt(LOCATION_TOP - PIN_HEIGHT, LOCATION_BOTTOM - PIN_HEIGHT),
     },
   };
 };
 
-var getAdsArray = function (iterationsNumber) {
+var getAds = function (iterationsNumber) {
   var array = [];
 
   for (var i = 1; i <= iterationsNumber; i++) {
-    array.push(generateAdvert(i));
+    array.push(createAdvert(i));
   }
 
   return array;
 };
 
-// getAdsArray(ADS_NUMBER);
+var createPin = function (advert) {
+  var pin = pinTemplate.cloneNode(true);
+  var pinButton = pin.querySelector('.map__pin');
+  var pinAvatar = pin.querySelector('img');
+
+  pinButton.style.left = advert.location.x + PIN_WIDTH / 2 + 'px';
+  pinButton.style.top = advert.location.y + PIN_HEIGHT + 'px';
+  pinAvatar.src = advert.author.avatar;
+  pinAvatar.alt = advert.offer.title;
+
+  return pin;
+};
+
+var renderPins = function (parentElement, adverts) {
+  var fragment = document.createDocumentFragment();
+
+  for (var i = 0; i < adverts.length; i++) {
+    fragment.appendChild(createPin(adverts[i]));
+  }
+
+  parentElement.appendChild(fragment);
+};
 
 document.querySelector('.map').classList.remove('map--faded');
+renderPins(pinList, getAds(ADS_NUMBER));
