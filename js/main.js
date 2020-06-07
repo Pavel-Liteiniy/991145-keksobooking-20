@@ -3,6 +3,8 @@
 var ADS_NUMBER = 8;
 var MAP_WIDTH = 1200;
 var MAP_HEIGHT = 704;
+var LOCATION_TOP = 130;
+var LOCATION_BOTTOM = 630;
 
 var advertTitles = ['Уютная хата', 'Милый домик', 'Проклятый старый дом', 'Клёвое бунгало', 'Шикарный дворец', 'Унылая хрущевка', 'Квартирка в многоэтажке'];
 var checkTimes = ['12:00', '13:00', '14:00'];
@@ -57,17 +59,21 @@ var generateAdvert = function (index) {
     },
     location: {
       x: getRandomInt(1, MAP_WIDTH - 1),
-      y: getRandomInt(130, 630),
+      y: getRandomInt(LOCATION_TOP, LOCATION_BOTTOM),
     },
   };
 };
 
-var getAdsArray = function (iterationNumber) {
+var getAdsArray = function (iterationsNumber) {
   var array = [];
 
-  for (var i = 1; i <= iterationNumber; i++) {
+  for (var i = 1; i <= iterationsNumber; i++) {
     array.push(generateAdvert(i));
   }
 
   return array;
 };
+
+// getAdsArray(ADS_NUMBER);
+
+document.querySelector('.map').classList.remove('map--faded');
