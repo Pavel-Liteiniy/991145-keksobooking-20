@@ -22,8 +22,32 @@ var advertDescriptions = [
 ];
 var advertPictures = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
 
+var cardPattern = {
+  template: '#card',
+  title: '.popup__title',
+  address: '.popup__text--address',
+  price: '.popup__text--price',
+  type: '.popup__type',
+  capacity: '.popup__text--capacity',
+  time: '.popup__text--time',
+  features: '.popup__features',
+  description: '.popup__description',
+  photos: '.popup__photos',
+  avatar: '.popup__avatar',
+};
+
+var offerType = {
+  flat: 'Квартира',
+  bungalo: 'Бунгало',
+  house: 'Дом',
+  palace: 'Дворец',
+};
+
 var pinTemplate = document.querySelector('#pin').content;
 var pinList = document.querySelector('.map__pins');
+var map = document.querySelector('.map');
+var filters = document.querySelector('.map__filters-container');
+var cardTemplate = document.querySelector(cardPattern.template).content;
 
 var mapWidth = pinList.offsetWidth;
 var mapHeight = pinList.offsetHeight;
@@ -94,15 +118,51 @@ var createPin = function (advert) {
   return pin;
 };
 
-var renderPins = function (parentElement, adverts) {
+var renderPins = function (parentElement, ads) {
   var fragment = document.createDocumentFragment();
 
-  for (var i = 0; i < adverts.length; i++) {
-    fragment.appendChild(createPin(adverts[i]));
+  for (var i = 0; i < ads.length; i++) {
+    fragment.appendChild(createPin(ads[i]));
   }
 
   parentElement.appendChild(fragment);
 };
 
-document.querySelector('.map').classList.remove('map--faded');
-renderPins(pinList, getAds(ADS_NUMBER));
+var createImg = function (parentElement, imgTemplate, sources, alt) {
+  var fragment = document.createDocumentFragment();
+
+  for (var i = 0; i < sources.length; i++) {
+    var img = imgTemplate.cloneNode(true);
+    img.src = sources[i];
+    img.alt = alt || '';
+    fragment.appendChild(img);
+  }
+
+  imgTemplate.remove();
+  parentElement.appendChild(fragment);
+};
+
+var renderCard = function (advert) {
+  var card = cardTemplate.cloneNode(true);
+
+  card.querySelector(cardPattern.title).textContent = advert.offer.title;
+  card.querySelector(cardPattern.address).textContent = advert.offer.address;
+  card.querySelector(cardPattern.price).textContent = advert.offer.price + '₽/ночь';
+  card.querySelector(cardPattern.type).textContent = offerType[advert.offer.type];
+  card.querySelector(cardPattern.capacity).textContent = advert.offer.rooms + ' комнаты для ' + advert.offer.guests + ' гостей';
+  card.querySelector(cardPattern.time).textContent = 'Заезд после ' + advert.offer.checkin + ', выезд до ' + advert.offer.checkout;
+  card.querySelector(cardPattern.features).textContent = advert.offer.features.join(', ');
+  card.querySelector(cardPattern.description).textContent = advert.offer.description;
+  createImg(card.querySelector(cardPattern.photos), card.querySelector(cardPattern.photos + ' img'), advert.offer.photos);
+  card.querySelector(cardPattern.avatar).src = advert.author.avatar;
+
+  return card;
+};
+
+var adverts = getAds(ADS_NUMBER);
+
+map.classList.remove('map--faded');
+
+renderPins(pinList, adverts);
+
+map.insertBefore(renderCard(adverts[0]), filters);
