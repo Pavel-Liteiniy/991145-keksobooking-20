@@ -134,7 +134,7 @@ var createImg = function (parentElement, imgTemplate, sources, alt) {
   for (var i = 0; i < sources.length; i++) {
     var img = imgTemplate.cloneNode(true);
     img.src = sources[i];
-    img.alt = alt || '';
+    img.alt = img.alt || alt || '';
     fragment.appendChild(img);
   }
 
