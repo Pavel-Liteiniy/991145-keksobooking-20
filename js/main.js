@@ -30,7 +30,16 @@ var cardPattern = {
   type: '.popup__type',
   capacity: '.popup__text--capacity',
   time: '.popup__text--time',
-  features: '.popup__features',
+  features: {
+    list: '.popup__features',
+    item: 'popup__feature',
+    wifi: 'popup__feature--wifi',
+    dishwasher: 'popup__feature--dishwasher',
+    parking: 'popup__feature--parking',
+    washer: 'popup__feature--washer',
+    elevator: 'popup__feature--elevator',
+    conditioner: 'popup__feature--conditioner',
+  },
   description: '.popup__description',
   photos: '.popup__photos',
   avatar: '.popup__avatar',
@@ -128,6 +137,19 @@ var renderPins = function (parentElement, ads) {
   parentElement.appendChild(fragment);
 };
 
+var createFeaturesList = function (parentElement, adFeatures, featureClasses) {
+  parentElement.innerHTML = '';
+  var fragment = document.createDocumentFragment();
+
+  for (var i = 0; i < adFeatures.length; i++) {
+    var listItem = document.createElement('li');
+    listItem.classList.add(featureClasses.item, featureClasses[adFeatures[i]]);
+    fragment.appendChild(listItem);
+  }
+
+  parentElement.appendChild(fragment);
+};
+
 var createImg = function (parentElement, imgTemplate, sources, alt) {
   var fragment = document.createDocumentFragment();
 
@@ -144,17 +166,77 @@ var createImg = function (parentElement, imgTemplate, sources, alt) {
 
 var renderCard = function (advert) {
   var card = cardTemplate.cloneNode(true);
+  var title = card.querySelector(cardPattern.title);
+  var address = card.querySelector(cardPattern.address);
+  var price = card.querySelector(cardPattern.price);
+  var type = card.querySelector(cardPattern.type);
+  var capacity = card.querySelector(cardPattern.capacity);
+  var time = card.querySelector(cardPattern.time);
+  var featuresList = card.querySelector(cardPattern.features.list);
+  var description = card.querySelector(cardPattern.description);
+  var photos = card.querySelector(cardPattern.photos);
+  var image = card.querySelector(cardPattern.photos + ' img');
+  var avatar = card.querySelector(cardPattern.avatar);
 
-  card.querySelector(cardPattern.title).textContent = advert.offer.title;
-  card.querySelector(cardPattern.address).textContent = advert.offer.address;
-  card.querySelector(cardPattern.price).textContent = advert.offer.price + '₽/ночь';
-  card.querySelector(cardPattern.type).textContent = offerType[advert.offer.type];
-  card.querySelector(cardPattern.capacity).textContent = advert.offer.rooms + ' комнаты для ' + advert.offer.guests + ' гостей';
-  card.querySelector(cardPattern.time).textContent = 'Заезд после ' + advert.offer.checkin + ', выезд до ' + advert.offer.checkout;
-  card.querySelector(cardPattern.features).textContent = advert.offer.features.join(', ');
-  card.querySelector(cardPattern.description).textContent = advert.offer.description;
-  createImg(card.querySelector(cardPattern.photos), card.querySelector(cardPattern.photos + ' img'), advert.offer.photos);
-  card.querySelector(cardPattern.avatar).src = advert.author.avatar;
+  if (advert.offer.title) {
+    title.textContent = advert.offer.title;
+  } else {
+    title.remove();
+  }
+
+  if (advert.offer.address) {
+    address.textContent = advert.offer.address;
+  } else {
+    address.remove();
+  }
+
+  if (advert.offer.price) {
+    price.textContent = advert.offer.price + '₽/ночь';
+  } else {
+    price.remove();
+  }
+
+  if (advert.offer.type) {
+    type.textContent = offerType[advert.offer.type];
+  } else {
+    type.remove();
+  }
+
+  if (advert.offer.rooms && advert.offer.guests) {
+    capacity.textContent = advert.offer.rooms + ' комнаты для ' + advert.offer.guests + ' гостей';
+  } else {
+    capacity.remove();
+  }
+
+  if (advert.offer.checkin && advert.offer.checkout) {
+    time.textContent = 'Заезд после ' + advert.offer.checkin + ', выезд до ' + advert.offer.checkout;
+  } else {
+    time.remove();
+  }
+
+  if (advert.offer.features) {
+    createFeaturesList(featuresList, advert.offer.features, cardPattern.features);
+  } else {
+    featuresList.remove();
+  }
+
+  if (advert.offer.description) {
+    description.textContent = advert.offer.description;
+  } else {
+    description.remove();
+  }
+
+  if (advert.offer.photos) {
+    createImg(photos, image, advert.offer.photos);
+  } else {
+    photos.remove();
+  }
+
+  if (advert.author.avatar) {
+    avatar.src = advert.author.avatar;
+  } else {
+    avatar.remove();
+  }
 
   return card;
 };
