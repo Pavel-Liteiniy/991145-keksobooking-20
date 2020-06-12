@@ -88,6 +88,9 @@ var advertForm = document.querySelector('.ad-form');
 var mainPin = document.querySelector('.map__pin--main');
 var advertAdressField = document.querySelector('#address');
 
+var roomSelection = document.querySelector('#room_number');
+var capacitySelection = document.querySelector('#capacity');
+
 var getRandomInt = function (min, max) {
   var rand = min + Math.random() * (max + 1 - min);
   return Math.floor(rand);
@@ -302,6 +305,15 @@ var activateMap = function () {
 
 var adverts = getAds(ADS_NUMBER);
 
+var compareRoomsAndGuests = function (evt) {
+  if ((roomSelection.value === '100' && capacitySelection.value === '0') || roomSelection.value === capacitySelection.value) {
+    capacitySelection.setCustomValidity('');
+  } else {
+    evt.preventDefault();
+    capacitySelection.setCustomValidity('Количество гостей не соответствует количестве комнат');
+  }
+};
+
 // map.classList.remove('map--faded');
 // map.insertBefore(renderCard(adverts[0]), filters);
 
@@ -327,4 +339,16 @@ mainPin.addEventListener('keydown', function (evt) {
   if (evt.keyCode === 13) {
     activateMap();
   }
+});
+
+advertForm.addEventListener('submit', function (evt) {
+  compareRoomsAndGuests(evt);
+});
+
+capacitySelection.addEventListener('change', function (evt) {
+  compareRoomsAndGuests(evt);
+});
+
+roomSelection.addEventListener('change', function (evt) {
+  compareRoomsAndGuests(evt);
 });
