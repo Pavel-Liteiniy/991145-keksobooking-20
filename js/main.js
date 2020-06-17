@@ -76,10 +76,7 @@ var MainPinSize = {
   },
 };
 
-var FormElements = {
-  FIELDSET: 'fieldset',
-  SELECT: 'select',
-};
+var FormElements = document.querySelectorAll('fieldset, select');
 
 var pinTemplate = document.querySelector('#pin').content;
 var pinList = document.querySelector('.map__pins');
@@ -90,7 +87,6 @@ var cardTemplate = document.querySelector(cardPattern.template).content;
 var mapWidth = pinList.offsetWidth;
 var mapHeight = pinList.offsetHeight;
 
-var mapFilters = document.querySelector('.map__filters');
 var advertForm = document.querySelector('.ad-form');
 var mainPin = document.querySelector('.map__pin--main');
 var advertAdressField = document.querySelector('#address');
@@ -287,45 +283,37 @@ var calculatePinLocation = function (pinSize, pinElement, isDisable) {
     : Math.round(pinSize.getSmallLocation().x + leftGap) + ', ' + Math.round(pinSize.getSmallLocation().y + topGap);
 };
 
-var toggleFormEditable = function (parentElement, formItem, isDisable) {
-  var items = parentElement.querySelectorAll(formItem);
-
-  for (var i = 0; i < items.length; i++) {
-    items[i].disabled = isDisable;
+var toggleFormEditable = function (formItems, isDisable) {
+  for (var i = 0; i < formItems.length; i++) {
+    formItems[i].disabled = isDisable;
   }
 };
 
 var onMainPinClick = function (evt) {
   evt.preventDefault();
-
-  if (evt.button === MOUSE_BUTTON_LEFT) {
-    activateMap();
-  }
+  activateMap(evt);
 };
 
 var onMainPinEnterPress = function (evt) {
   evt.preventDefault();
-
-  if (evt.key === KEY_ENTER) {
-    activateMap();
-  }
+  activateMap(evt);
 };
 
-var activateMap = function () {
-  map.classList.remove('map--faded');
-  renderPins(pinList, adverts);
-  advertForm.classList.remove('ad-form--disabled');
+var activateMap = function (evt) {
+  if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
+    map.classList.remove('map--faded');
+    renderPins(pinList, adverts);
+    advertForm.classList.remove('ad-form--disabled');
 
-  toggleFormEditable(mapFilters, FormElements.FIELDSET, false);
-  toggleFormEditable(mapFilters, FormElements.SELECT, false);
-  toggleFormEditable(advertForm, FormElements.FIELDSET, false);
+    toggleFormEditable(FormElements, false);
 
-  advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, false);
+    advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, false);
 
-  mainPin.removeEventListener('mousedown', onMainPinClick);
-  mainPin.removeEventListener('keydown', onMainPinEnterPress);
+    mainPin.removeEventListener('mousedown', onMainPinClick);
+    mainPin.removeEventListener('keydown', onMainPinEnterPress);
 
-  map.insertBefore(renderCard(adverts[0]), filters);
+    map.insertBefore(renderCard(adverts[0]), filters);
+  }
 };
 
 var adverts = getAds(ADS_NUMBER);
@@ -339,11 +327,7 @@ var compareRoomsAndGuests = function (evt) {
   }
 };
 
-map.classList.remove('map--faded');
-
-toggleFormEditable(mapFilters, FormElements.FIELDSET, true);
-toggleFormEditable(mapFilters, FormElements.SELECT, true);
-toggleFormEditable(advertForm, FormElements.FIELDSET, true);
+toggleFormEditable(FormElements, true);
 
 advertForm.classList.add('ad-form--disabled');
 
