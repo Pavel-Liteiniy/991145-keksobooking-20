@@ -49,10 +49,12 @@ var cardPattern = {
 };
 
 var offerType = {
-  flat: 'Квартира',
-  bungalo: 'Бунгало',
-  house: 'Дом',
-  palace: 'Дворец',
+  ru: {
+    flat: 'Квартира',
+    bungalo: 'Бунгало',
+    house: 'Дом',
+    palace: 'Дворец',
+  },
 };
 
 var MainPinSize = {
@@ -230,7 +232,7 @@ var renderCard = function (advert) {
   }
 
   if (advert.offer.type) {
-    type.textContent = offerType[advert.offer.type];
+    type.textContent = offerType.ru[advert.offer.type];
   } else {
     type.remove();
   }
