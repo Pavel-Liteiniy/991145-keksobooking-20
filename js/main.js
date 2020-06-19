@@ -7,6 +7,9 @@ var LOCATION_BOTTOM = 630;
 var PIN_WIDTH = 50;
 var PIN_HEIGHT = 70;
 
+var KEY_ENTER = 'Enter';
+var MOUSE_BUTTON_LEFT = 0;
+
 var advertTitles = ['Уютная хата', 'Милый домик', 'Проклятый старый дом', 'Клёвое бунгало', 'Шикарный дворец', 'Унылая хрущевка', 'Квартирка в многоэтажке'];
 var checkTimes = ['12:00', '13:00', '14:00'];
 var advertFeatures = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
@@ -46,11 +49,43 @@ var cardPattern = {
 };
 
 var offerType = {
-  flat: 'Квартира',
-  bungalo: 'Бунгало',
-  house: 'Дом',
-  palace: 'Дворец',
+  ru: {
+    flat: 'Квартира',
+    bungalo: 'Бунгало',
+    house: 'Дом',
+    palace: 'Дворец',
+  },
 };
+
+var MainPinSize = {
+  BIG_WIDTH: 65,
+  BIG_HEIGHT: 65,
+  SMALL_WIDTH: 65,
+  SMALL_HEIGHT: 84,
+
+  getBigLocation: function () {
+    return {
+      x: this.BIG_WIDTH / 2,
+      y: this.BIG_HEIGHT / 2,
+    };
+  },
+
+  getSmallLocation: function () {
+    return {
+      x: this.SMALL_WIDTH / 2,
+      y: this.SMALL_HEIGHT,
+    };
+  },
+};
+
+var RoomsCapacity = {
+  '1': ['1'],
+  '2': ['2', '1'],
+  '3': ['3', '2', '1'],
+  '100': ['0'],
+};
+
+var FormElements = document.querySelectorAll('fieldset, select');
 
 var pinTemplate = document.querySelector('#pin').content;
 var pinList = document.querySelector('.map__pins');
@@ -60,6 +95,12 @@ var cardTemplate = document.querySelector(cardPattern.template).content;
 
 var mapWidth = pinList.offsetWidth;
 var mapHeight = pinList.offsetHeight;
+
+var advertForm = document.querySelector('.ad-form');
+var mainPin = document.querySelector('.map__pin--main');
+var advertAdressField = advertForm.querySelector('#address');
+var selectRoomNumber = advertForm.querySelector('#room_number');
+var selectCapacity = advertForm.querySelector('#capacity');
 
 var getRandomInt = function (min, max) {
   var rand = min + Math.random() * (max + 1 - min);
@@ -197,7 +238,7 @@ var renderCard = function (advert) {
   }
 
   if (advert.offer.type) {
-    type.textContent = offerType[advert.offer.type];
+    type.textContent = offerType.ru[advert.offer.type];
   } else {
     type.remove();
   }
@@ -241,10 +282,74 @@ var renderCard = function (advert) {
   return card;
 };
 
+var calculatePinLocation = function (pinSize, pinElement, isDisable) {
+  var leftGap = Number(pinElement.style.left.slice(0, -2));
+  var topGap = Number(pinElement.style.top.slice(0, -2));
+
+  return isDisable
+    ? Math.round(pinSize.getBigLocation().x + leftGap) + ', ' + Math.round(pinSize.getBigLocation().y + topGap)
+    : Math.round(pinSize.getSmallLocation().x + leftGap) + ', ' + Math.round(pinSize.getSmallLocation().y + topGap);
+};
+
+var toggleFormEditable = function (formItems, isDisable) {
+  for (var i = 0; i < formItems.length; i++) {
+    formItems[i].disabled = isDisable;
+  }
+};
+
+var onMainPinClick = function (evt) {
+  evt.preventDefault();
+  activateMap(evt);
+};
+
+var onMainPinEnterPress = function (evt) {
+  evt.preventDefault();
+  activateMap(evt);
+};
+
+var activateMap = function (evt) {
+  if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
+    map.classList.remove('map--faded');
+    renderPins(pinList, adverts);
+    advertForm.classList.remove('ad-form--disabled');
+
+    toggleFormEditable(FormElements, false);
+
+    advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, false);
+
+    mainPin.removeEventListener('mousedown', onMainPinClick);
+    mainPin.removeEventListener('keydown', onMainPinEnterPress);
+
+    map.insertBefore(renderCard(adverts[0]), filters);
+  }
+};
+
+var selectRoomNumberChangeHandler = function () {
+  if (selectCapacity.options.length > 0) {
+    [].forEach.call(selectCapacity.options, function (item) {
+      var value = RoomsCapacity[selectRoomNumber.value];
+      var isHidden = !(value.indexOf(item.value) >= 0);
+
+      item.hidden = isHidden;
+      item.disabled = isHidden;
+      item.selected = value[0] === item.value;
+    });
+  }
+};
+
 var adverts = getAds(ADS_NUMBER);
 
-map.classList.remove('map--faded');
+toggleFormEditable(FormElements, true);
 
-renderPins(pinList, adverts);
+advertForm.classList.add('ad-form--disabled');
 
-map.insertBefore(renderCard(adverts[0]), filters);
+advertAdressField.readOnly = true;
+advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, true);
+
+mainPin.addEventListener('mousedown', onMainPinClick);
+
+mainPin.addEventListener('keydown', onMainPinEnterPress);
+
+selectRoomNumber.addEventListener('change', selectRoomNumberChangeHandler);
+
+selectRoomNumberChangeHandler();
