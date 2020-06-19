@@ -78,6 +78,13 @@ var MainPinSize = {
   },
 };
 
+var RoomsCapacity = {
+  '1': ['1'],
+  '2': ['2', '1'],
+  '3': ['3', '2', '1'],
+  '100': ['0'],
+};
+
 var FormElements = document.querySelectorAll('fieldset, select');
 
 var pinTemplate = document.querySelector('#pin').content;
@@ -91,10 +98,9 @@ var mapHeight = pinList.offsetHeight;
 
 var advertForm = document.querySelector('.ad-form');
 var mainPin = document.querySelector('.map__pin--main');
-var advertAdressField = document.querySelector('#address');
-
-var roomSelection = document.querySelector('#room_number');
-var capacitySelection = document.querySelector('#capacity');
+var advertAdressField = advertForm.querySelector('#address');
+var selectRoomNumber = advertForm.querySelector('#room_number');
+var selectCapacity = advertForm.querySelector('#capacity');
 
 var getRandomInt = function (min, max) {
   var rand = min + Math.random() * (max + 1 - min);
@@ -318,16 +324,20 @@ var activateMap = function (evt) {
   }
 };
 
-var adverts = getAds(ADS_NUMBER);
+var selectRoomNumberChangeHandler = function () {
+  if (selectCapacity.options.length > 0) {
+    [].forEach.call(selectCapacity.options, function (item) {
+      var value = RoomsCapacity[selectRoomNumber.value];
+      var isHidden = !(value.indexOf(item.value) >= 0);
 
-var compareRoomsAndGuests = function (evt) {
-  if ((roomSelection.value === '100' && capacitySelection.value === '0') || roomSelection.value === capacitySelection.value) {
-    capacitySelection.setCustomValidity('');
-  } else {
-    evt.preventDefault();
-    capacitySelection.setCustomValidity('Количество гостей не соответствует количестве комнат');
+      item.hidden = isHidden;
+      item.disabled = isHidden;
+      item.selected = value[0] === item.value;
+    });
   }
 };
+
+var adverts = getAds(ADS_NUMBER);
 
 toggleFormEditable(FormElements, true);
 
@@ -340,14 +350,6 @@ mainPin.addEventListener('mousedown', onMainPinClick);
 
 mainPin.addEventListener('keydown', onMainPinEnterPress);
 
-advertForm.addEventListener('submit', function (evt) {
-  compareRoomsAndGuests(evt);
-});
+selectRoomNumber.addEventListener('change', selectRoomNumberChangeHandler);
 
-capacitySelection.addEventListener('change', function (evt) {
-  compareRoomsAndGuests(evt);
-});
-
-roomSelection.addEventListener('change', function (evt) {
-  compareRoomsAndGuests(evt);
-});
+selectRoomNumberChangeHandler();
