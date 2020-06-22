@@ -8,6 +8,7 @@ var PIN_WIDTH = 50;
 var PIN_HEIGHT = 70;
 
 var KEY_ENTER = 'Enter';
+var KEY_ESCAPE = 'Escape';
 var MOUSE_BUTTON_LEFT = 0;
 
 var advertTitles = ['Уютная хата', 'Милый домик', 'Проклятый старый дом', 'Клёвое бунгало', 'Шикарный дворец', 'Унылая хрущевка', 'Квартирка в многоэтажке'];
@@ -27,6 +28,7 @@ var advertPictures = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'htt
 
 var cardPattern = {
   template: '#card',
+  article: '.map__card',
   title: '.popup__title',
   address: '.popup__text--address',
   price: '.popup__text--price',
@@ -46,6 +48,7 @@ var cardPattern = {
   description: '.popup__description',
   photos: '.popup__photos',
   avatar: '.popup__avatar',
+  close: '.popup__close',
 };
 
 var offerType = {
@@ -54,6 +57,12 @@ var offerType = {
     bungalo: 'Бунгало',
     house: 'Дом',
     palace: 'Дворец',
+  },
+  minPrice: {
+    flat: 1000,
+    bungalo: 0,
+    house: 5000,
+    palace: 10000,
   },
 };
 
@@ -307,10 +316,57 @@ var onMainPinEnterPress = function (evt) {
   activateMap(evt);
 };
 
+var onCardCloseButtonClick = function (evt) {
+  evt.preventDefault();
+  closeCard();
+};
+
+var onCardEscPress = function (evt) {
+  if (evt.key === KEY_ESCAPE) {
+    evt.preventDefault();
+    closeCard();
+  }
+};
+
+var closeCard = function () {
+  map.querySelector(cardPattern.close).removeEventListener('click', onCardCloseButtonClick);
+  document.removeEventListener('keydown', onCardEscPress);
+  map.querySelector(cardPattern.article).remove();
+};
+
+var getListenedRenderedCard = function (advert) {
+  map.insertBefore(renderCard(advert), filters);
+
+  map.querySelector(cardPattern.close).addEventListener('click', onCardCloseButtonClick);
+  document.addEventListener('keydown', onCardEscPress);
+};
+
+var openCard = function (pin, advert) {
+  pin.addEventListener('click', function (evt) {
+    evt.preventDefault();
+
+    var isCardRendered = map.querySelector(cardPattern.article);
+
+    if (isCardRendered !== null && map.querySelector(cardPattern.address).textContent !== advert.offer.address) {
+      closeCard();
+      getListenedRenderedCard(advert);
+    } else if (!(isCardRendered !== null)) {
+      getListenedRenderedCard(advert);
+    }
+  });
+};
+
 var activateMap = function (evt) {
   if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
     map.classList.remove('map--faded');
     renderPins(pinList, adverts);
+
+    var anotherPins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
+
+    for (var i = 0; i < anotherPins.length; i++) {
+      openCard(anotherPins[i], adverts[i]);
+    }
+
     advertForm.classList.remove('ad-form--disabled');
 
     toggleFormEditable(FormElements, false);
@@ -319,8 +375,6 @@ var activateMap = function (evt) {
 
     mainPin.removeEventListener('mousedown', onMainPinClick);
     mainPin.removeEventListener('keydown', onMainPinEnterPress);
-
-    map.insertBefore(renderCard(adverts[0]), filters);
   }
 };
 
@@ -353,3 +407,27 @@ mainPin.addEventListener('keydown', onMainPinEnterPress);
 selectRoomNumber.addEventListener('change', selectRoomNumberChangeHandler);
 
 selectRoomNumberChangeHandler();
+
+var advertTypeSelect = advertForm.querySelector('#type');
+var advertPriceInput = advertForm.querySelector('#price');
+
+advertTypeSelect.addEventListener('change', function () {
+  advertPriceInput.min = offerType.minPrice[advertTypeSelect.value];
+});
+
+var timeInSelect = advertForm.querySelector('#timein');
+var timeOutSelect = advertForm.querySelector('#timeout');
+
+var changeTimeSelect = function (timeSelect, evt) {
+  [].forEach.call(timeSelect.options, function (option) {
+    option.selected = evt.currentTarget.value === option.value;
+  });
+};
+
+timeInSelect.addEventListener('change', function (evt) {
+  changeTimeSelect(timeOutSelect, evt);
+});
+
+timeOutSelect.addEventListener('change', function (evt) {
+  changeTimeSelect(timeInSelect, evt);
+});
