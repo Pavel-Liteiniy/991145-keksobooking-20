@@ -345,12 +345,12 @@ var openCard = function (pin, advert) {
   pin.addEventListener('click', function (evt) {
     evt.preventDefault();
 
-    var isCardRendered = map.querySelector(cardPattern.article) ? true : false;
+    var isCardRendered = map.querySelector(cardPattern.article);
 
-    if (isCardRendered && map.querySelector(cardPattern.address).textContent !== advert.offer.address) {
+    if (isCardRendered !== null && map.querySelector(cardPattern.address).textContent !== advert.offer.address) {
       closeCard();
       getListenedRenderedCard(advert);
-    } else if (!isCardRendered) {
+    } else if (!(isCardRendered !== null)) {
       getListenedRenderedCard(advert);
     }
   });
@@ -420,7 +420,7 @@ var timeOutSelect = advertForm.querySelector('#timeout');
 
 var changeTimeSelect = function (timeSelect, evt) {
   [].forEach.call(timeSelect.options, function (option) {
-    option.selected = evt.currentTarget.value === option.value ? true : false;
+    option.selected = evt.currentTarget.value === option.value;
   });
 };
 
