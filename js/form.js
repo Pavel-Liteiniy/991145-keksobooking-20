@@ -136,5 +136,6 @@
     bidElements: bidElements,
     mainPin: mainPin,
     advertAdressField: advertAdressField,
+    mainPinSize: MainPinSize,
   };
 })();

@@ -78,5 +78,10 @@
     return array;
   };
 
-  window.adverts = getAds(ADS_NUMBER);
+  window.adverts = {
+    arr: getAds(ADS_NUMBER),
+    LOCATION_TOP: 130,
+    LOCATION_BOTTOM: 630,
+    mapWidth: mapWidth,
+  };
 })();
