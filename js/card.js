@@ -30,7 +30,6 @@
 
   var cardTemplate = document.querySelector(cardPattern.template).content;
   var filters = document.querySelector('.map__filters-container');
-  var map = document.querySelector('.map');
 
   var createFeaturesList = function (parentElement, adFeatures, featureClasses) {
     parentElement.innerHTML = '';
@@ -149,15 +148,15 @@
   };
 
   var closeCard = function () {
-    map.querySelector(cardPattern.close).removeEventListener('click', onCardCloseButtonClick);
+    window.map.element.querySelector(cardPattern.close).removeEventListener('click', onCardCloseButtonClick);
     document.removeEventListener('keydown', onCardEscPress);
-    map.querySelector(cardPattern.article).remove();
+    window.map.element.querySelector(cardPattern.article).remove();
   };
 
   var getListenedRenderedCard = function (advert) {
-    map.insertBefore(renderCard(advert), filters);
+    window.map.element.insertBefore(renderCard(advert), filters);
 
-    map.querySelector(cardPattern.close).addEventListener('click', onCardCloseButtonClick);
+    window.map.element.querySelector(cardPattern.close).addEventListener('click', onCardCloseButtonClick);
     document.addEventListener('keydown', onCardEscPress);
   };
 
@@ -165,9 +164,9 @@
     pin.addEventListener('click', function (evt) {
       evt.preventDefault();
 
-      var isCardRendered = map.querySelector(cardPattern.article);
+      var isCardRendered = window.map.element.querySelector(cardPattern.article);
 
-      if (isCardRendered !== null && map.querySelector(cardPattern.address).textContent !== advert.offer.address) {
+      if (isCardRendered !== null && window.map.element.querySelector(cardPattern.address).textContent !== advert.offer.address) {
         closeCard();
         getListenedRenderedCard(advert);
       } else if (!(isCardRendered !== null)) {
@@ -177,7 +176,6 @@
   };
 
   window.card = {
-    map: map,
     open: openCard,
   };
 })();

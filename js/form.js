@@ -16,27 +16,6 @@
     },
   };
 
-  var MainPinSize = {
-    BIG_WIDTH: 65,
-    BIG_HEIGHT: 65,
-    SMALL_WIDTH: 65,
-    SMALL_HEIGHT: 84,
-
-    getBigLocation: function () {
-      return {
-        x: this.BIG_WIDTH / 2,
-        y: this.BIG_HEIGHT / 2,
-      };
-    },
-
-    getSmallLocation: function () {
-      return {
-        x: this.SMALL_WIDTH / 2,
-        y: this.SMALL_HEIGHT,
-      };
-    },
-  };
-
   var RoomsCapacity = {
     '1': ['1'],
     '2': ['2', '1'],
@@ -44,28 +23,10 @@
     '100': ['0'],
   };
 
-  var bidElements = document.querySelectorAll('fieldset, select');
-
   var bid = document.querySelector('.ad-form');
-  var mainPin = document.querySelector('.map__pin--main');
   var advertAdressField = bid.querySelector('#address');
   var selectRoomNumber = bid.querySelector('#room_number');
   var selectCapacity = bid.querySelector('#capacity');
-
-  var calculatePinLocation = function (pinSize, pinElement, isDisable) {
-    var leftGap = Number(pinElement.style.left.slice(0, -2));
-    var topGap = Number(pinElement.style.top.slice(0, -2));
-
-    return isDisable
-      ? Math.round(pinSize.getBigLocation().x + leftGap) + ', ' + Math.round(pinSize.getBigLocation().y + topGap)
-      : Math.round(pinSize.getSmallLocation().x + leftGap) + ', ' + Math.round(pinSize.getSmallLocation().y + topGap);
-  };
-
-  var toggleFormEditable = function (formItems, isDisable) {
-    for (var i = 0; i < formItems.length; i++) {
-      formItems[i].disabled = isDisable;
-    }
-  };
 
   var onSelectRoomNumberChangeClick = function () {
     if (selectCapacity.options.length > 0) {
@@ -80,12 +41,12 @@
     }
   };
 
-  toggleFormEditable(bidElements, true);
+  window.map.toggleEditable(window.map.bidElements, true);
 
   bid.classList.add('ad-form--disabled');
 
   advertAdressField.readOnly = true;
-  advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, true);
+  advertAdressField.value = window.map.calculatePinLocation();
 
   selectRoomNumber.addEventListener('change', onSelectRoomNumberChangeClick);
 
@@ -96,6 +57,7 @@
 
   advertTypeSelect.addEventListener('change', function () {
     advertPriceInput.min = offerType.minPrice[advertTypeSelect.value];
+    advertPriceInput.placeholder = offerType.minPrice[advertTypeSelect.value];
   });
 
   var timeInSelect = bid.querySelector('#timein');
@@ -116,26 +78,8 @@
   });
 
   window.form = {
-    toggleEditable: function (formItems, isDisable) {
-      for (var i = 0; i < formItems.length; i++) {
-        formItems[i].disabled = isDisable;
-      }
-    },
-    calculatePinLocation: function (pinSize, pinElement, isDisable) {
-      var leftGap = Number(pinElement.style.left.slice(0, -2));
-      var topGap = Number(pinElement.style.top.slice(0, -2));
-
-      return isDisable
-        ? Math.round(pinSize.getBigLocation().x + leftGap) + ', ' + Math.round(pinSize.getBigLocation().y + topGap)
-        : Math.round(pinSize.getSmallLocation().x + leftGap) + ', ' + Math.round(pinSize.getSmallLocation().y + topGap);
-    },
-
     offerType: offerType,
-    MainPinSize: MainPinSize,
     bid: bid,
-    bidElements: bidElements,
-    mainPin: mainPin,
     advertAdressField: advertAdressField,
-    mainPinSize: MainPinSize,
   };
 })();
