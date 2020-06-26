@@ -5,39 +5,44 @@
   var PIN_HEIGHT = 70;
 
   var KEY_ENTER = 'Enter';
-  var KEY_ESCAPE = 'Escape';
   var MOUSE_BUTTON_LEFT = 0;
 
-  var cardPattern = {
-    template: '#card',
-    article: '.map__card',
-    title: '.popup__title',
-    address: '.popup__text--address',
-    price: '.popup__text--price',
-    type: '.popup__type',
-    capacity: '.popup__text--capacity',
-    time: '.popup__text--time',
-    features: {
-      list: '.popup__features',
-      item: 'popup__feature',
-      wifi: 'popup__feature--wifi',
-      dishwasher: 'popup__feature--dishwasher',
-      parking: 'popup__feature--parking',
-      washer: 'popup__feature--washer',
-      elevator: 'popup__feature--elevator',
-      conditioner: 'popup__feature--conditioner',
+  var MainPinSize = {
+    BIG_WIDTH: 65,
+    BIG_HEIGHT: 65,
+    SMALL_WIDTH: 65,
+    SMALL_HEIGHT: 84,
+
+    getBigLocation: function () {
+      return {
+        x: this.BIG_WIDTH / 2,
+        y: this.BIG_HEIGHT / 2,
+      };
     },
-    description: '.popup__description',
-    photos: '.popup__photos',
-    avatar: '.popup__avatar',
-    close: '.popup__close',
+
+    getSmallLocation: function () {
+      return {
+        x: this.SMALL_WIDTH / 2,
+        y: this.SMALL_HEIGHT,
+      };
+    },
   };
 
-  var pinTemplate = document.querySelector('#pin').content;
-  var pinList = document.querySelector('.map__pins');
   var map = document.querySelector('.map');
-  var filters = document.querySelector('.map__filters-container');
-  var cardTemplate = document.querySelector(cardPattern.template).content;
+  var mainPin = map.querySelector('.map__pin--main');
+  var pinTemplate = document.querySelector('#pin').content;
+  var pinList = map.querySelector('.map__pins');
+
+  var bidElements = document.querySelectorAll('fieldset, select');
+
+  var calculatePinLocation = function () {
+    var leftGap = Number(mainPin.style.left.slice(0, -2));
+    var topGap = Number(mainPin.style.top.slice(0, -2));
+
+    return checkMapState()
+      ? Math.round(MainPinSize.getBigLocation().x + leftGap) + ', ' + Math.round(MainPinSize.getBigLocation().y + topGap)
+      : Math.round(MainPinSize.getSmallLocation().x + leftGap) + ', ' + Math.round(MainPinSize.getSmallLocation().y + topGap);
+  };
 
   var createPin = function (advert) {
     var pin = pinTemplate.cloneNode(true);
@@ -52,6 +57,12 @@
     return pin;
   };
 
+  var toggleEditable = function (formItems, isDisable) {
+    for (var i = 0; i < formItems.length; i++) {
+      formItems[i].disabled = isDisable;
+    }
+  };
+
   var renderPins = function (parentElement, ads) {
     var fragment = document.createDocumentFragment();
 
@@ -62,113 +73,82 @@
     parentElement.appendChild(fragment);
   };
 
-  var createFeaturesList = function (parentElement, adFeatures, featureClasses) {
-    parentElement.innerHTML = '';
-    var fragment = document.createDocumentFragment();
-
-    for (var i = 0; i < adFeatures.length; i++) {
-      var listItem = document.createElement('li');
-      listItem.classList.add(featureClasses.item, featureClasses[adFeatures[i]]);
-      fragment.appendChild(listItem);
-    }
-
-    parentElement.appendChild(fragment);
+  var checkMapState = function () {
+    return map.classList.contains('map--faded');
   };
 
-  var createImg = function (parentElement, imgTemplate, sources, alt) {
-    var fragment = document.createDocumentFragment();
+  var setMainPinPosition = function (shiftX, shiftY) {
+    var x = shiftX;
+    var pinPositionX = mainPin.offsetLeft - shiftX;
+    var leftOffset = 1 - MainPinSize.getSmallLocation().x;
+    var rightOffset = window.adverts.mapWidth - 1 - MainPinSize.getSmallLocation().x;
 
-    for (var i = 0; i < sources.length; i++) {
-      var img = imgTemplate.cloneNode(true);
-      img.src = sources[i];
-      img.alt = img.alt || alt || '';
-      fragment.appendChild(img);
-    }
-
-    imgTemplate.remove();
-    parentElement.appendChild(fragment);
-  };
-
-  var renderCard = function (advert) {
-    var card = cardTemplate.cloneNode(true);
-    var title = card.querySelector(cardPattern.title);
-    var address = card.querySelector(cardPattern.address);
-    var price = card.querySelector(cardPattern.price);
-    var type = card.querySelector(cardPattern.type);
-    var capacity = card.querySelector(cardPattern.capacity);
-    var time = card.querySelector(cardPattern.time);
-    var featuresList = card.querySelector(cardPattern.features.list);
-    var description = card.querySelector(cardPattern.description);
-    var photos = card.querySelector(cardPattern.photos);
-    var image = card.querySelector(cardPattern.photos + ' img');
-    var avatar = card.querySelector(cardPattern.avatar);
-
-    if (advert.offer.title) {
-      title.textContent = advert.offer.title;
+    if (pinPositionX < leftOffset) {
+      x = leftOffset;
+    } else if (pinPositionX > rightOffset) {
+      x = rightOffset;
     } else {
-      title.remove();
+      x = pinPositionX;
     }
 
-    if (advert.offer.address) {
-      address.textContent = advert.offer.address;
+    var y = shiftY;
+    var pinPositionY = mainPin.offsetTop - shiftY;
+    var topOffset = window.adverts.LOCATION_TOP - MainPinSize.getSmallLocation().y;
+    var bottomOffset = window.adverts.LOCATION_BOTTOM - MainPinSize.getSmallLocation().y;
+
+    if (pinPositionY < topOffset) {
+      y = topOffset;
+    } else if (pinPositionY > bottomOffset) {
+      y = bottomOffset;
     } else {
-      address.remove();
+      y = pinPositionY;
     }
 
-    if (advert.offer.price) {
-      price.textContent = advert.offer.price + '₽/ночь';
-    } else {
-      price.remove();
-    }
-
-    if (advert.offer.type) {
-      type.textContent = window.form.offerType.ru[advert.offer.type];
-    } else {
-      type.remove();
-    }
-
-    if (advert.offer.rooms && advert.offer.guests) {
-      capacity.textContent = advert.offer.rooms + ' комнаты для ' + advert.offer.guests + ' гостей';
-    } else {
-      capacity.remove();
-    }
-
-    if (advert.offer.checkin && advert.offer.checkout) {
-      time.textContent = 'Заезд после ' + advert.offer.checkin + ', выезд до ' + advert.offer.checkout;
-    } else {
-      time.remove();
-    }
-
-    if (advert.offer.features) {
-      createFeaturesList(featuresList, advert.offer.features, cardPattern.features);
-    } else {
-      featuresList.remove();
-    }
-
-    if (advert.offer.description) {
-      description.textContent = advert.offer.description;
-    } else {
-      description.remove();
-    }
-
-    if (advert.offer.photos) {
-      createImg(photos, image, advert.offer.photos);
-    } else {
-      photos.remove();
-    }
-
-    if (advert.author.avatar) {
-      avatar.src = advert.author.avatar;
-    } else {
-      avatar.remove();
-    }
-
-    return card;
+    mainPin.style.left = x + 'px';
+    mainPin.style.top = y + 'px';
   };
 
   var onMainPinClick = function (evt) {
     evt.preventDefault();
-    activateMap(evt);
+
+    if (checkMapState()) {
+      activateMap(evt);
+    }
+
+    if (evt.button === MOUSE_BUTTON_LEFT) {
+      var startCoords = {
+        x: evt.clientX,
+        y: evt.clientY,
+      };
+
+      var onMouseMove = function (moveEvt) {
+        moveEvt.preventDefault();
+
+        var shift = {
+          x: startCoords.x - moveEvt.clientX,
+          y: startCoords.y - moveEvt.clientY,
+        };
+
+        startCoords = {
+          x: moveEvt.clientX,
+          y: moveEvt.clientY,
+        };
+
+        setMainPinPosition(shift.x, shift.y);
+
+        window.form.advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, false);
+      };
+
+      var onMouseUp = function (upEvt) {
+        upEvt.preventDefault();
+
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
   };
 
   var onMainPinEnterPress = function (evt) {
@@ -176,73 +156,39 @@
     activateMap(evt);
   };
 
-  var onCardCloseButtonClick = function (evt) {
-    evt.preventDefault();
-    closeCard();
-  };
-
-  var onCardEscPress = function (evt) {
-    if (evt.key === KEY_ESCAPE) {
-      evt.preventDefault();
-      closeCard();
-    }
-  };
-
-  var closeCard = function () {
-    map.querySelector(cardPattern.close).removeEventListener('click', onCardCloseButtonClick);
-    document.removeEventListener('keydown', onCardEscPress);
-    map.querySelector(cardPattern.article).remove();
-  };
-
-  var getListenedRenderedCard = function (advert) {
-    map.insertBefore(renderCard(advert), filters);
-
-    map.querySelector(cardPattern.close).addEventListener('click', onCardCloseButtonClick);
-    document.addEventListener('keydown', onCardEscPress);
-  };
-
-  var openCard = function (pin, advert) {
-    pin.addEventListener('click', function (evt) {
-      evt.preventDefault();
-
-      var isCardRendered = map.querySelector(cardPattern.article);
-
-      if (isCardRendered !== null && map.querySelector(cardPattern.address).textContent !== advert.offer.address) {
-        closeCard();
-        getListenedRenderedCard(advert);
-      } else if (!(isCardRendered !== null)) {
-        getListenedRenderedCard(advert);
-      }
-    });
-  };
-
   var activateMap = function (evt) {
     if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
       map.classList.remove('map--faded');
-      renderPins(pinList, window.adverts);
+      renderPins(pinList, window.adverts.arr);
 
       var anotherPins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
 
       for (var i = 0; i < anotherPins.length; i++) {
-        openCard(anotherPins[i], window.adverts[i]);
+        window.card.open(anotherPins[i], window.adverts.arr[i]);
       }
 
       window.form.bid.classList.remove('ad-form--disabled');
 
-      window.form.toggleEditable(window.form.bidElements, false);
+      toggleEditable(bidElements, false);
 
-      window.form.advertAdressField.value = window.form.calculatePinLocation(window.form.MainPinSize, window.form.mainPin, false);
+      window.form.advertAdressField.value = calculatePinLocation();
 
-      window.form.mainPin.removeEventListener('mousedown', onMainPinClick);
-      window.form.mainPin.removeEventListener('keydown', onMainPinEnterPress);
+      mainPin.removeEventListener('keydown', onMainPinEnterPress);
     }
   };
 
-  window.form.toggleEditable(window.form.bidElements, true);
+  toggleEditable(bidElements, true);
 
-  window.form.bid.classList.add('ad-form--disabled');
+  mainPin.addEventListener('mousedown', onMainPinClick);
+  mainPin.addEventListener('keydown', onMainPinEnterPress);
 
-  window.form.mainPin.addEventListener('mousedown', onMainPinClick);
-
-  window.form.mainPin.addEventListener('keydown', onMainPinEnterPress);
+  window.map = {
+    element: map,
+    mainPin: mainPin,
+    checkMapState: checkMapState,
+    toggleEditable: toggleEditable,
+    calculatePinLocation: calculatePinLocation,
+    bidElements: bidElements,
+    MainPinSize: MainPinSize,
+  };
 })();
