@@ -7,6 +7,14 @@
   var KEY_ENTER = 'Enter';
   var MOUSE_BUTTON_LEFT = 0;
 
+  var LOCATION_TOP = 130;
+  var LOCATION_BOTTOM = 630;
+
+  var GET_URL = 'https://javascript.pages.academy/keksobooking/data';
+
+  var onError = function () {
+  };
+
   var MainPinSize = {
     BIG_WIDTH: 65,
     BIG_HEIGHT: 65,
@@ -32,6 +40,7 @@
   var mainPin = map.querySelector('.map__pin--main');
   var pinTemplate = document.querySelector('#pin').content;
   var pinList = map.querySelector('.map__pins');
+  var mapWidth = pinList.offsetWidth;
 
   var bidElements = document.querySelectorAll('fieldset, select');
 
@@ -81,7 +90,7 @@
     var x = shiftX;
     var pinPositionX = mainPin.offsetLeft - shiftX;
     var leftOffset = 1 - MainPinSize.getSmallLocation().x;
-    var rightOffset = window.adverts.mapWidth - 1 - MainPinSize.getSmallLocation().x;
+    var rightOffset = mapWidth - 1 - MainPinSize.getSmallLocation().x;
 
     if (pinPositionX < leftOffset) {
       x = leftOffset;
@@ -93,8 +102,8 @@
 
     var y = shiftY;
     var pinPositionY = mainPin.offsetTop - shiftY;
-    var topOffset = window.adverts.LOCATION_TOP - MainPinSize.getSmallLocation().y;
-    var bottomOffset = window.adverts.LOCATION_BOTTOM - MainPinSize.getSmallLocation().y;
+    var topOffset = LOCATION_TOP - MainPinSize.getSmallLocation().y;
+    var bottomOffset = LOCATION_BOTTOM - MainPinSize.getSmallLocation().y;
 
     if (pinPositionY < topOffset) {
       y = topOffset;
@@ -159,13 +168,20 @@
   var activateMap = function (evt) {
     if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
       map.classList.remove('map--faded');
-      renderPins(pinList, window.adverts.arr);
 
-      var anotherPins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
+      window.backend.load(
+          GET_URL,
+          function (adverts) {
+            renderPins(pinList, adverts);
 
-      for (var i = 0; i < anotherPins.length; i++) {
-        window.card.open(anotherPins[i], window.adverts.arr[i]);
-      }
+            var anotherPins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
+
+            for (var i = 0; i < anotherPins.length; i++) {
+              window.card.open(anotherPins[i], adverts[i]);
+            }
+          },
+          onError
+      );
 
       window.form.bid.classList.remove('ad-form--disabled');
 
