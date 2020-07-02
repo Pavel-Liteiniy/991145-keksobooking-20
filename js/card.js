@@ -29,7 +29,6 @@
   };
 
   var cardTemplate = document.querySelector(cardPattern.template).content;
-  var filters = document.querySelector('.map__filters-container');
 
   var createFeaturesList = function (parentElement, adFeatures, featureClasses) {
     parentElement.innerHTML = '';
@@ -132,6 +131,9 @@
       avatar.remove();
     }
 
+    card.querySelector(cardPattern.close).addEventListener('click', onCardCloseButtonClick);
+    document.addEventListener('keydown', onCardEscPress);
+
     return card;
   };
 
@@ -148,34 +150,12 @@
   };
 
   var closeCard = function () {
-    window.map.element.querySelector(cardPattern.close).removeEventListener('click', onCardCloseButtonClick);
     document.removeEventListener('keydown', onCardEscPress);
-    window.map.element.querySelector(cardPattern.article).remove();
-  };
-
-  var getListenedRenderedCard = function (advert) {
-    window.map.element.insertBefore(renderCard(advert), filters);
-
-    window.map.element.querySelector(cardPattern.close).addEventListener('click', onCardCloseButtonClick);
-    document.addEventListener('keydown', onCardEscPress);
-  };
-
-  var openCard = function (pin, advert) {
-    pin.addEventListener('click', function (evt) {
-      evt.preventDefault();
-
-      var isCardRendered = window.map.element.querySelector(cardPattern.article);
-
-      if (isCardRendered !== null && window.map.element.querySelector(cardPattern.address).textContent !== advert.offer.address) {
-        closeCard();
-        getListenedRenderedCard(advert);
-      } else if (!(isCardRendered !== null)) {
-        getListenedRenderedCard(advert);
-      }
-    });
+    window.map.removePopup();
   };
 
   window.card = {
-    open: openCard,
+    render: renderCard,
+    close: closeCard,
   };
 })();
