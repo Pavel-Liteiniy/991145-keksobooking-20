@@ -10,12 +10,16 @@
   var LOCATION_TOP = 130;
   var LOCATION_BOTTOM = 630;
 
-  var GET_URL = 'https://javascript.pages.academy/keksobooking/data';
+  var MIN_COUNT = 5;
+
+  var offers = [];
 
   var onError = function () {
   };
 
-  var MainPinSize = {
+  var MainPin = {
+    START_X: 570,
+    START_Y: 375,
     BIG_WIDTH: 65,
     BIG_HEIGHT: 65,
     SMALL_WIDTH: 65,
@@ -37,6 +41,8 @@
   };
 
   var map = document.querySelector('.map');
+  var filtersContainer = map.querySelector('.map__filters-container');
+  var filters = filtersContainer.querySelector('.map__filters');
   var mainPin = map.querySelector('.map__pin--main');
   var pinTemplate = document.querySelector('#pin').content;
   var pinList = map.querySelector('.map__pins');
@@ -49,8 +55,16 @@
     var topGap = Number(mainPin.style.top.slice(0, -2));
 
     return checkMapState()
-      ? Math.round(MainPinSize.getBigLocation().x + leftGap) + ', ' + Math.round(MainPinSize.getBigLocation().y + topGap)
-      : Math.round(MainPinSize.getSmallLocation().x + leftGap) + ', ' + Math.round(MainPinSize.getSmallLocation().y + topGap);
+      ? Math.round(MainPin.getBigLocation().x + leftGap) + ', ' + Math.round(MainPin.getBigLocation().y + topGap)
+      : Math.round(MainPin.getSmallLocation().x + leftGap) + ', ' + Math.round(MainPin.getSmallLocation().y + topGap);
+  };
+
+  var removePopup = function () {
+    var popup = map.querySelector('.popup');
+
+    if (popup !== null) {
+      popup.remove();
+    }
   };
 
   var createPin = function (advert) {
@@ -62,6 +76,12 @@
     pinButton.style.top = advert.location.y - PIN_HEIGHT + 'px';
     pinAvatar.src = advert.author.avatar;
     pinAvatar.alt = advert.offer.title;
+
+    pinButton.addEventListener('click', function (evt) {
+      evt.preventDefault();
+      removePopup();
+      map.insertBefore(window.card.render(advert), filtersContainer);
+    });
 
     return pin;
   };
@@ -89,8 +109,8 @@
   var setMainPinPosition = function (shiftX, shiftY) {
     var x = shiftX;
     var pinPositionX = mainPin.offsetLeft - shiftX;
-    var leftOffset = 1 - MainPinSize.getSmallLocation().x;
-    var rightOffset = mapWidth - 1 - MainPinSize.getSmallLocation().x;
+    var leftOffset = 1 - MainPin.getSmallLocation().x;
+    var rightOffset = mapWidth - 1 - MainPin.getSmallLocation().x;
 
     if (pinPositionX < leftOffset) {
       x = leftOffset;
@@ -102,8 +122,8 @@
 
     var y = shiftY;
     var pinPositionY = mainPin.offsetTop - shiftY;
-    var topOffset = LOCATION_TOP - MainPinSize.getSmallLocation().y;
-    var bottomOffset = LOCATION_BOTTOM - MainPinSize.getSmallLocation().y;
+    var topOffset = LOCATION_TOP - MainPin.getSmallLocation().y;
+    var bottomOffset = LOCATION_BOTTOM - MainPin.getSmallLocation().y;
 
     if (pinPositionY < topOffset) {
       y = topOffset;
@@ -145,7 +165,7 @@
 
         setMainPinPosition(shift.x, shift.y);
 
-        window.form.advertAdressField.value = calculatePinLocation(MainPinSize, mainPin, false);
+        window.form.advertAdressField.value = calculatePinLocation(MainPin, mainPin, false);
       };
 
       var onMouseUp = function (upEvt) {
@@ -165,23 +185,16 @@
     activateMap(evt);
   };
 
+  var onSuccess = function (adverts) {
+    offers = adverts.slice();
+    renderPins(pinList, offers.slice(0, MIN_COUNT));
+  };
+
   var activateMap = function (evt) {
     if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
       map.classList.remove('map--faded');
 
-      window.backend.load(
-          GET_URL,
-          function (adverts) {
-            renderPins(pinList, adverts);
-
-            var anotherPins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
-
-            for (var i = 0; i < anotherPins.length; i++) {
-              window.card.open(anotherPins[i], adverts[i]);
-            }
-          },
-          onError
-      );
+      window.backend.load(onSuccess, onError);
 
       window.form.bid.classList.remove('ad-form--disabled');
 
@@ -201,10 +214,13 @@
   window.map = {
     element: map,
     mainPin: mainPin,
+    bidElements: bidElements,
+    MainPin: MainPin,
+    filters: filters,
+    removePopup: removePopup,
     checkMapState: checkMapState,
     toggleEditable: toggleEditable,
     calculatePinLocation: calculatePinLocation,
-    bidElements: bidElements,
-    MainPinSize: MainPinSize,
+    onMainPinEnterPress: onMainPinEnterPress,
   };
 })();

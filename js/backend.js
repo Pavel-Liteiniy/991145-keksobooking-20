@@ -1,6 +1,9 @@
 'use strict';
 
 (function () {
+  var GET_URL = 'https://javascript.pages.academy/keksobooking/data';
+  var POST_URL = 'https://javascript.pages.academy/keksobooking';
+
   var ResponseStatus = {
     Code: {
       SUCCESS_OK: 200,
@@ -22,7 +25,7 @@
     },
   };
 
-  var request = function (url, onSuccess, onError, data) {
+  var request = function (url, onSuccess, onError, method, data) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
 
@@ -41,17 +44,21 @@
       onError();
     });
 
+    xhr.open(method, url);
+
     if (data) {
-      xhr.open('POST', url);
       xhr.send(data);
     } else {
-      xhr.open('GET', url);
       xhr.send();
     }
   };
 
   window.backend = {
-    load: request,
-    save: request,
+    load: function (onSuccess, onError) {
+      request(GET_URL, onSuccess, onError, 'GET');
+    },
+    save: function (onSuccess, onError, data) {
+      request(POST_URL, onSuccess, onError, 'POST', data);
+    },
   };
 })();
