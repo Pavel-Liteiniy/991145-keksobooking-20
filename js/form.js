@@ -52,7 +52,7 @@
     advertTypeSelect.value = advertTypeSelect.options[1].value;
     onAdvertTypeSelectChange();
 
-    window.map.element.querySelectorAll('.map__pin:not(.map__pin--main)').forEach(function (item) {
+    [].forEach.call(window.map.element.querySelectorAll('.map__pin:not(.map__pin--main)'), function (item) {
       item.remove();
     });
 

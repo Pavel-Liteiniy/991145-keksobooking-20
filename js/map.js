@@ -65,6 +65,15 @@
     if (popup !== null) {
       popup.remove();
     }
+
+    var pins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
+    var activePin = [].find.call(pins, function (item) {
+      return item.classList.contains('map__pin--active');
+    });
+
+    if (activePin) {
+      activePin.classList.remove('map__pin--active');
+    }
   };
 
   var createPin = function (advert) {
@@ -79,25 +88,29 @@
 
     pinButton.addEventListener('click', function (evt) {
       evt.preventDefault();
+
       removePopup();
       map.insertBefore(window.card.render(advert), filtersContainer);
+
+      pinButton.classList.add('map__pin--active');
     });
 
     return pin;
   };
 
   var toggleEditable = function (formItems, isDisable) {
-    for (var i = 0; i < formItems.length; i++) {
-      formItems[i].disabled = isDisable;
-    }
+
+    [].forEach.call(formItems, function (formItem) {
+      formItem.disabled = isDisable;
+    });
   };
 
   var renderPins = function (parentElement, ads) {
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < ads.length; i++) {
-      fragment.appendChild(createPin(ads[i]));
-    }
+    ads.forEach(function (ad) {
+      fragment.appendChild(createPin(ad));
+    });
 
     parentElement.appendChild(fragment);
   };
