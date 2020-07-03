@@ -30,8 +30,6 @@
     '100': ['0'],
   };
 
-  var formInputElements = ['input[type="text"]', 'input[type="number"]', 'input[type="file"]', 'textarea'];
-
   var main = document.querySelector('main');
   var bid = main.querySelector('.ad-form');
   var bidResetButton = bid.querySelector('.ad-form__reset');
@@ -46,19 +44,8 @@
     bid.classList.add('ad-form--disabled');
     window.map.element.classList.add('map--faded');
 
-    main.querySelectorAll('select').forEach(function (item) {
-      item.value = item.options[0].value;
-    });
-
-    main.querySelectorAll('input[type="checkbox"]').forEach(function (item) {
-      item.checked = false;
-    });
-
-    formInputElements.forEach(function (element) {
-      main.querySelectorAll(element).forEach(function (item) {
-        item.value = '';
-      });
-    });
+    bid.reset();
+    window.map.filters.reset();
 
     onSelectRoomNumberChangeClick();
 

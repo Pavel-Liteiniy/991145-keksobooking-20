@@ -42,6 +42,7 @@
 
   var map = document.querySelector('.map');
   var filtersContainer = map.querySelector('.map__filters-container');
+  var filters = filtersContainer.querySelector('.map__filters');
   var mainPin = map.querySelector('.map__pin--main');
   var pinTemplate = document.querySelector('#pin').content;
   var pinList = map.querySelector('.map__pins');
@@ -213,12 +214,13 @@
   window.map = {
     element: map,
     mainPin: mainPin,
+    bidElements: bidElements,
+    MainPin: MainPin,
+    filters: filters,
     removePopup: removePopup,
     checkMapState: checkMapState,
     toggleEditable: toggleEditable,
     calculatePinLocation: calculatePinLocation,
     onMainPinEnterPress: onMainPinEnterPress,
-    bidElements: bidElements,
-    MainPin: MainPin,
   };
 })();
