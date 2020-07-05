@@ -13,8 +13,31 @@
   var MIN_COUNT = 5;
 
   var offers = [];
+  var checkResponseSuccess = false;
 
   var onError = function () {
+    var popup = document.createElement('div');
+    popup.style.padding = '15px';
+    popup.style.borderRadius = '20px';
+    popup.style.position = 'absolute';
+    popup.style.top = '55%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.backgroundColor = 'white';
+    popup.style.fontSize = '16px';
+    popup.style.textAlign = 'center';
+    popup.classList.add('map__popup--error');
+
+    var title = document.createElement('p');
+    title.style.fontWeight = 'bold';
+    title.textContent = 'Упс, что-то пошло не так...';
+
+    var description = document.createElement('p');
+    description.textContent = 'Не удалось отобразить на карте объявления других пользователей';
+
+    popup.appendChild(title);
+    popup.appendChild(description);
+    map.appendChild(popup);
   };
 
   var MainPin = {
@@ -43,12 +66,13 @@
   var map = document.querySelector('.map');
   var filtersContainer = map.querySelector('.map__filters-container');
   var filters = filtersContainer.querySelector('.map__filters');
+  var filterElements = filters.querySelectorAll('fieldset, select');
   var mainPin = map.querySelector('.map__pin--main');
   var pinTemplate = document.querySelector('#pin').content;
   var pinList = map.querySelector('.map__pins');
   var mapWidth = pinList.offsetWidth;
 
-  var bidElements = document.querySelectorAll('fieldset, select');
+  var bidElements = document.querySelectorAll('.ad-form fieldset, .ad-form select');
 
   var calculatePinLocation = function () {
     var leftGap = Number(mainPin.style.left.slice(0, -2));
@@ -199,15 +223,22 @@
   };
 
   var onSuccess = function (adverts) {
+    checkResponseSuccess = true;
     offers = adverts.slice();
     renderPins(pinList, offers.slice(0, MIN_COUNT));
+    toggleEditable(filterElements, false);
   };
 
   var activateMap = function (evt) {
     if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
       map.classList.remove('map--faded');
 
-      window.backend.load(onSuccess, onError);
+      if (!checkResponseSuccess) {
+        window.backend.load(onSuccess, onError);
+      } else {
+        renderPins(pinList, offers.slice(0, MIN_COUNT));
+        toggleEditable(filterElements, false);
+      }
 
       window.form.bid.classList.remove('ad-form--disabled');
 
@@ -219,6 +250,7 @@
     }
   };
 
+  toggleEditable(filterElements, true);
   toggleEditable(bidElements, true);
 
   mainPin.addEventListener('mousedown', onMainPinClick);
@@ -230,6 +262,7 @@
     bidElements: bidElements,
     MainPin: MainPin,
     filters: filters,
+    filterElements: filterElements,
     removePopup: removePopup,
     checkMapState: checkMapState,
     toggleEditable: toggleEditable,

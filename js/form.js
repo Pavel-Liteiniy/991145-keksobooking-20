@@ -3,7 +3,7 @@
 (function () {
   var KEY_ESCAPE = 'Escape';
 
-  var RequestPopupTypes = {
+  var RequestPopupType = {
     SUCCESS: 'success',
     ERROR: 'error',
   };
@@ -40,6 +40,7 @@
   var inactivateMap = function () {
 
     window.map.toggleEditable(window.map.bidElements, true);
+    window.map.toggleEditable(window.map.filterElements, true);
 
     bid.classList.add('ad-form--disabled');
     window.map.element.classList.add('map--faded');
@@ -55,6 +56,11 @@
     [].forEach.call(window.map.element.querySelectorAll('.map__pin:not(.map__pin--main)'), function (item) {
       item.remove();
     });
+
+    var popupError = window.map.element.querySelector('.map__popup--error');
+    if (popupError !== null) {
+      popupError.remove();
+    }
 
     window.card.close();
 
@@ -110,13 +116,13 @@
   };
 
   var onSuccess = function () {
-    renderRequestPopup(RequestPopupTypes.SUCCESS);
+    renderRequestPopup(RequestPopupType.SUCCESS);
 
     inactivateMap();
   };
 
   var onError = function () {
-    renderRequestPopup(RequestPopupTypes.ERROR);
+    renderRequestPopup(RequestPopupType.ERROR);
   };
 
   window.map.toggleEditable(window.map.bidElements, true);
@@ -173,5 +179,6 @@
     offerType: offerType,
     bid: bid,
     advertAdressField: advertAdressField,
+    main: main,
   };
 })();
