@@ -53,9 +53,7 @@
     advertTypeSelect.value = advertTypeSelect.options[1].value;
     onAdvertTypeSelectChange();
 
-    [].forEach.call(window.map.element.querySelectorAll('.map__pin:not(.map__pin--main)'), function (item) {
-      item.remove();
-    });
+    window.map.removePins();
 
     var popupError = window.map.element.querySelector('.map__popup--error');
     if (popupError !== null) {
@@ -69,6 +67,7 @@
 
     advertAdressField.value = window.map.calculatePinLocation();
 
+    window.map.filters.removeEventListener('change', window.map.onFiltersChange);
     window.map.mainPin.addEventListener('keydown', window.map.onMainPinEnterPress);
   };
 

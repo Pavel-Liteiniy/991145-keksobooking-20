@@ -24,6 +24,7 @@
     popup.style.left = '50%';
     popup.style.transform = 'translate(-50%, -50%)';
     popup.style.backgroundColor = 'white';
+    popup.style.boxShadow = '2px 2px 10px #555555';
     popup.style.fontSize = '16px';
     popup.style.textAlign = 'center';
     popup.classList.add('map__popup--error');
@@ -81,6 +82,12 @@
     return checkMapState()
       ? Math.round(MainPin.getBigLocation().x + leftGap) + ', ' + Math.round(MainPin.getBigLocation().y + topGap)
       : Math.round(MainPin.getSmallLocation().x + leftGap) + ', ' + Math.round(MainPin.getSmallLocation().y + topGap);
+  };
+
+  var removePins = function () {
+    [].forEach.call(map.querySelectorAll('.map__pin:not(.map__pin--main)'), function (item) {
+      item.remove();
+    });
   };
 
   var removePopup = function () {
@@ -224,9 +231,28 @@
 
   var onSuccess = function (adverts) {
     checkResponseSuccess = true;
-    offers = adverts.slice();
+    offers = adverts.slice().filter(function (advert) {
+      return advert.hasOwnProperty('offer');
+    });
     renderPins(pinList, offers.slice(0, MIN_COUNT));
     toggleEditable(filterElements, false);
+    filters.addEventListener('change', onFiltersChange);
+  };
+
+  var onFiltersChange = function (evt) {
+    evt.preventDefault();
+
+    var filtredOffers = offers.filter(function (offer) {
+      if (evt.target.value === 'any') {
+        return true;
+      } else {
+        return offer.offer.type === evt.target.value;
+      }
+    });
+
+    window.card.close();
+    removePins();
+    renderPins(pinList, filtredOffers.slice(0, MIN_COUNT));
   };
 
   var activateMap = function (evt) {
@@ -238,6 +264,7 @@
       } else {
         renderPins(pinList, offers.slice(0, MIN_COUNT));
         toggleEditable(filterElements, false);
+        filters.addEventListener('change', onFiltersChange);
       }
 
       window.form.bid.classList.remove('ad-form--disabled');
@@ -264,9 +291,11 @@
     filters: filters,
     filterElements: filterElements,
     removePopup: removePopup,
+    removePins: removePins,
     checkMapState: checkMapState,
     toggleEditable: toggleEditable,
     calculatePinLocation: calculatePinLocation,
     onMainPinEnterPress: onMainPinEnterPress,
+    onFiltersChange: onFiltersChange,
   };
 })();
