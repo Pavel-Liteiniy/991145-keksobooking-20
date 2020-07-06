@@ -73,7 +73,7 @@
 
   var onSelectRoomNumberChangeClick = function () {
     if (selectCapacity.options.length > 0) {
-      [].forEach.call(selectCapacity.options, function (item) {
+      Array.from(selectCapacity.options).forEach(function (item) {
         var value = RoomsCapacity[selectRoomNumber.value];
         var isHidden = !(value.indexOf(item.value) >= 0);
 
@@ -149,7 +149,7 @@
   var timeOutSelect = bid.querySelector('#timeout');
 
   var changeTimeSelect = function (timeSelect, evt) {
-    [].forEach.call(timeSelect.options, function (option) {
+    Array.from(timeSelect.options).forEach(function (option) {
       option.selected = evt.currentTarget.value === option.value;
     });
   };

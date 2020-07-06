@@ -13,7 +13,6 @@
   var MIN_COUNT = 5;
 
   var offers = [];
-  var checkResponseSuccess = false;
 
   var onError = function () {
     var popup = document.createElement('div');
@@ -85,7 +84,7 @@
   };
 
   var removePins = function () {
-    [].forEach.call(map.querySelectorAll('.map__pin:not(.map__pin--main)'), function (item) {
+    Array.from(map.querySelectorAll('.map__pin:not(.map__pin--main)')).forEach(function (item) {
       item.remove();
     });
   };
@@ -98,7 +97,7 @@
     }
 
     var pins = pinList.querySelectorAll('.map__pin:not(.map__pin--main)');
-    var activePin = [].find.call(pins, function (item) {
+    var activePin = Array.from(pins).find(function (item) {
       return item.classList.contains('map__pin--active');
     });
 
@@ -131,7 +130,7 @@
 
   var toggleEditable = function (formItems, isDisable) {
 
-    [].forEach.call(formItems, function (formItem) {
+    Array.from(formItems).forEach(function (formItem) {
       formItem.disabled = isDisable;
     });
   };
@@ -230,7 +229,6 @@
   };
 
   var onSuccess = function (adverts) {
-    checkResponseSuccess = true;
     offers = adverts.slice().filter(function (advert) {
       return advert.hasOwnProperty('offer');
     });
@@ -259,13 +257,7 @@
     if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
       map.classList.remove('map--faded');
 
-      if (!checkResponseSuccess) {
-        window.backend.load(onSuccess, onError);
-      } else {
-        renderPins(pinList, offers.slice(0, MIN_COUNT));
-        toggleEditable(filterElements, false);
-        filters.addEventListener('change', onFiltersChange);
-      }
+      window.backend.load(onSuccess, onError);
 
       window.form.bid.classList.remove('ad-form--disabled');
 
