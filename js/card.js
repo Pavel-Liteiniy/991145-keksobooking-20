@@ -34,11 +34,11 @@
     parentElement.innerHTML = '';
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < adFeatures.length; i++) {
+    adFeatures.forEach(function (adFeature) {
       var listItem = document.createElement('li');
-      listItem.classList.add(featureClasses.item, featureClasses[adFeatures[i]]);
+      listItem.classList.add(featureClasses.item, featureClasses[adFeature]);
       fragment.appendChild(listItem);
-    }
+    });
 
     parentElement.appendChild(fragment);
   };
@@ -46,12 +46,12 @@
   var createImg = function (parentElement, imgTemplate, sources, alt) {
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < sources.length; i++) {
+    sources.forEach(function (source) {
       var img = imgTemplate.cloneNode(true);
-      img.src = sources[i];
+      img.src = source;
       img.alt = img.alt || alt || '';
       fragment.appendChild(img);
-    }
+    });
 
     imgTemplate.remove();
     parentElement.appendChild(fragment);

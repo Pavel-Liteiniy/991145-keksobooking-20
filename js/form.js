@@ -3,7 +3,7 @@
 (function () {
   var KEY_ESCAPE = 'Escape';
 
-  var RequestPopupTypes = {
+  var RequestPopupType = {
     SUCCESS: 'success',
     ERROR: 'error',
   };
@@ -40,6 +40,7 @@
   var inactivateMap = function () {
 
     window.map.toggleEditable(window.map.bidElements, true);
+    window.map.toggleEditable(window.map.filterElements, true);
 
     bid.classList.add('ad-form--disabled');
     window.map.element.classList.add('map--faded');
@@ -52,9 +53,12 @@
     advertTypeSelect.value = advertTypeSelect.options[1].value;
     onAdvertTypeSelectChange();
 
-    window.map.element.querySelectorAll('.map__pin:not(.map__pin--main)').forEach(function (item) {
-      item.remove();
-    });
+    window.map.removePins();
+
+    var popupError = window.map.element.querySelector('.map__popup--error');
+    if (popupError !== null) {
+      popupError.remove();
+    }
 
     window.card.close();
 
@@ -63,12 +67,13 @@
 
     advertAdressField.value = window.map.calculatePinLocation();
 
+    window.map.filters.removeEventListener('change', window.map.onFiltersChange);
     window.map.mainPin.addEventListener('keydown', window.map.onMainPinEnterPress);
   };
 
   var onSelectRoomNumberChangeClick = function () {
     if (selectCapacity.options.length > 0) {
-      [].forEach.call(selectCapacity.options, function (item) {
+      Array.from(selectCapacity.options).forEach(function (item) {
         var value = RoomsCapacity[selectRoomNumber.value];
         var isHidden = !(value.indexOf(item.value) >= 0);
 
@@ -110,13 +115,13 @@
   };
 
   var onSuccess = function () {
-    renderRequestPopup(RequestPopupTypes.SUCCESS);
+    renderRequestPopup(RequestPopupType.SUCCESS);
 
     inactivateMap();
   };
 
   var onError = function () {
-    renderRequestPopup(RequestPopupTypes.ERROR);
+    renderRequestPopup(RequestPopupType.ERROR);
   };
 
   window.map.toggleEditable(window.map.bidElements, true);
@@ -144,7 +149,7 @@
   var timeOutSelect = bid.querySelector('#timeout');
 
   var changeTimeSelect = function (timeSelect, evt) {
-    [].forEach.call(timeSelect.options, function (option) {
+    Array.from(timeSelect.options).forEach(function (option) {
       option.selected = evt.currentTarget.value === option.value;
     });
   };
@@ -173,5 +178,6 @@
     offerType: offerType,
     bid: bid,
     advertAdressField: advertAdressField,
+    main: main,
   };
 })();
