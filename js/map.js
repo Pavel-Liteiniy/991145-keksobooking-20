@@ -12,6 +12,8 @@
 
   var MIN_COUNT = 5;
 
+  var DEBOUNCE_INTERVAL = 500;
+
   var offers = [];
 
   var onError = function () {
@@ -228,29 +230,91 @@
     activateMap(evt);
   };
 
+  var debounce = function (fn, time) {
+    var timeout;
+
+    return function () {
+      var parameters = arguments;
+      var fnCall = function () {
+        fn.apply(null, parameters);
+      };
+
+      clearTimeout(timeout);
+      timeout = setTimeout(fnCall, time);
+    };
+  };
+
   var onSuccess = function (adverts) {
     offers = adverts.slice().filter(function (advert) {
       return advert.hasOwnProperty('offer');
     });
     renderPins(pinList, offers.slice(0, MIN_COUNT));
     toggleEditable(filterElements, false);
-    filters.addEventListener('change', onFiltersChange);
+
+    filters.addEventListener('change', debounce(onFiltersChange, DEBOUNCE_INTERVAL));
+  };
+
+  var filterPriceMap = {
+    'low': {
+      min: 0,
+      max: 10000
+    },
+    'middle': {
+      min: 10000,
+      max: 50000
+    },
+    'high': {
+      min: 50000,
+      max: Infinity
+    }
+  };
+
+  var filterFormElement = Array.from(filters.children);
+
+  var filterRules = {
+    'housing-type': function (advert, filterElement) {
+      return filterElement.value === advert.offer.type;
+    },
+
+    'housing-price': function (advert, filterElement) {
+      return advert.offer.price >= filterPriceMap[filterElement.value].min && advert.offer.price < filterPriceMap[filterElement.value].max;
+    },
+
+    'housing-rooms': function (advert, filterElement) {
+      return filterElement.value === advert.offer.rooms.toString();
+    },
+
+    'housing-guests': function (advert, filterElement) {
+      return filterElement.value === advert.offer.guests.toString();
+    },
+
+    'housing-features': function (advert, filterElement) {
+      var checkedFilterFeatures = Array.from(filterElement.querySelectorAll('input[type=checkbox]:checked'));
+
+      return checkedFilterFeatures.every(function (filterFeature) {
+        return advert.offer.features.some(function (advertFeature) {
+          return filterFeature.value === advertFeature;
+        });
+      });
+    }
+  };
+
+  var filterAdverts = function (adverts) {
+    return adverts.filter(function (advert) {
+      return filterFormElement.every(function (filterElement) {
+        return (filterElement.value === 'any') ? true : filterRules[filterElement.id](advert, filterElement);
+      });
+    });
   };
 
   var onFiltersChange = function (evt) {
     evt.preventDefault();
 
-    var filtredOffers = offers.filter(function (offer) {
-      if (evt.target.value === 'any') {
-        return true;
-      } else {
-        return offer.offer.type === evt.target.value;
-      }
-    });
+    var filteredOffers = filterAdverts(offers);
 
     window.card.close();
     removePins();
-    renderPins(pinList, filtredOffers.slice(0, MIN_COUNT));
+    renderPins(pinList, filteredOffers.slice(0, MIN_COUNT));
   };
 
   var activateMap = function (evt) {
