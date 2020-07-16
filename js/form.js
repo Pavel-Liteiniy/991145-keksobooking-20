@@ -2,6 +2,9 @@
 
 (function () {
   var KEY_ESCAPE = 'Escape';
+  var FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+
+  var avatarPlugFile = 'img/muffin-grey.svg';
 
   var RequestPopupType = {
     SUCCESS: 'success',
@@ -37,6 +40,11 @@
   var selectRoomNumber = bid.querySelector('#room_number');
   var selectCapacity = bid.querySelector('#capacity');
 
+  var avatarFile = bid.querySelector('#avatar');
+  var avatarPreview = bid.querySelector('.ad-form-header__preview img');
+  var adFile = bid.querySelector('#images');
+  var adPreviewWrapper = bid.querySelector('.ad-form__photo');
+
   var inactivateMap = function () {
 
     window.map.toggleEditable(window.map.bidElements, true);
@@ -66,6 +74,9 @@
     window.map.mainPin.style.top = window.map.MainPin.START_Y + 'px';
 
     advertAdressField.value = window.map.calculatePinLocation();
+
+    avatarPreview.src = avatarPlugFile;
+    removeAdPreviewImage();
 
     window.map.filters.removeEventListener('change', window.map.onFiltersChange);
     window.map.mainPin.addEventListener('keydown', window.map.onMainPinEnterPress);
@@ -172,6 +183,65 @@
     evt.preventDefault();
 
     inactivateMap();
+  });
+
+  avatarFile.addEventListener('change', function () {
+    var file = avatarFile.files[0];
+    var fileName = file.name.toLowerCase();
+
+    var matches = FILE_TYPES.some(function (it) {
+      return fileName.endsWith(it);
+    });
+
+    if (matches) {
+      var reader = new FileReader();
+
+      reader.addEventListener('load', function () {
+        avatarPreview.src = reader.result;
+      });
+
+      reader.readAsDataURL(file);
+    }
+  });
+
+  var removeAdPreviewImage = function () {
+    var adPreviewImage = bid.querySelector('.ad-form__photo img');
+    if (adPreviewImage !== null) {
+      adPreviewImage.remove();
+    }
+  };
+
+  var createAdPreviewImage = function () {
+    removeAdPreviewImage();
+    var adImage = document.createElement('img');
+
+    adImage.alt = 'Превью фото жилья';
+    adImage.style.maxWidth = adPreviewWrapper.offsetWidth + 'px';
+    adImage.style.maxHeight = adPreviewWrapper.offsetHeight + 'px';
+    adPreviewWrapper.appendChild(adImage);
+
+    return bid.querySelector('.ad-form__photo img');
+  };
+
+  adFile.addEventListener('change', function () {
+    var file = adFile.files[0];
+    var fileName = file.name.toLowerCase();
+
+    var matches = FILE_TYPES.some(function (it) {
+      return fileName.endsWith(it);
+    });
+
+    if (matches) {
+      var reader = new FileReader();
+
+      reader.addEventListener('load', function () {
+
+        var adPreview = createAdPreviewImage();
+        adPreview.src = reader.result;
+      });
+
+      reader.readAsDataURL(file);
+    }
   });
 
   window.form = {
