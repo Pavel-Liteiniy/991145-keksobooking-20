@@ -30,30 +30,30 @@
 
   var cardTemplate = document.querySelector(cardPattern.template).content;
 
-  var createFeaturesList = function (parentElement, adFeatures, featureClasses) {
+  var createFeaturesList = function (parentElement, features, featureClasses) {
     parentElement.innerHTML = '';
     var fragment = document.createDocumentFragment();
 
-    adFeatures.forEach(function (adFeature) {
+    features.forEach(function (feature) {
       var listItem = document.createElement('li');
-      listItem.classList.add(featureClasses.item, featureClasses[adFeature]);
+      listItem.classList.add(featureClasses.item, featureClasses[feature]);
       fragment.appendChild(listItem);
     });
 
     parentElement.appendChild(fragment);
   };
 
-  var createImg = function (parentElement, imgTemplate, sources, alt) {
+  var createImg = function (parentElement, imageTemplate, sources, alternativeText) {
     var fragment = document.createDocumentFragment();
 
     sources.forEach(function (source) {
-      var img = imgTemplate.cloneNode(true);
+      var img = imageTemplate.cloneNode(true);
       img.src = source;
-      img.alt = img.alt || alt || '';
+      img.alt = img.alt || alternativeText || '';
       fragment.appendChild(img);
     });
 
-    imgTemplate.remove();
+    imageTemplate.remove();
     parentElement.appendChild(fragment);
   };
 
