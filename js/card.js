@@ -30,8 +30,8 @@
 
   var cardTemplate = document.querySelector(cardPattern.template).content;
 
-  var createFeaturesList = function (parentElement, features, featureClasses) {
-    parentElement.innerHTML = '';
+  var createFeaturesList = function (parent, features, featureClasses) {
+    parent.innerHTML = '';
     var fragment = document.createDocumentFragment();
 
     features.forEach(function (feature) {
@@ -40,10 +40,10 @@
       fragment.appendChild(listItem);
     });
 
-    parentElement.appendChild(fragment);
+    parent.appendChild(fragment);
   };
 
-  var createImg = function (parentElement, imageTemplate, sources, alternativeText) {
+  var createImg = function (parent, imageTemplate, sources, alternativeText) {
     var fragment = document.createDocumentFragment();
 
     sources.forEach(function (source) {
@@ -54,7 +54,7 @@
     });
 
     imageTemplate.remove();
-    parentElement.appendChild(fragment);
+    parent.appendChild(fragment);
   };
 
   var renderCard = function (advert) {

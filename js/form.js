@@ -3,8 +3,7 @@
 (function () {
   var KEY_ESCAPE = 'Escape';
   var FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
-
-  var avatarPlugFile = 'img/muffin-grey.svg';
+  var AVATAR_PLUG_FILE = 'img/muffin-grey.svg';
 
   var RequestPopupType = {
     SUCCESS: 'success',
@@ -39,6 +38,7 @@
   var advertAdressField = bid.querySelector('#address');
   var selectRoomNumber = bid.querySelector('#room_number');
   var selectCapacity = bid.querySelector('#capacity');
+  var popup = document.getElementsByClassName(RequestPopupType.SUCCESS);
 
   var avatarFile = bid.querySelector('#avatar');
   var avatarPreview = bid.querySelector('.ad-form-header__preview img');
@@ -52,8 +52,8 @@
 
   var inactivateMap = function () {
 
-    window.map.toggleEditable(window.map.bidElements, true);
-    window.map.toggleEditable(window.map.filterElements, true);
+    window.map.toggleEditable(window.map.bidItems, true);
+    window.map.toggleEditable(window.map.filterItems, true);
 
     bid.classList.add('ad-form--disabled');
     window.map.element.classList.add('map--faded');
@@ -80,7 +80,7 @@
 
     advertAdressField.value = window.map.calculatePinLocation();
 
-    avatarPreview.src = avatarPlugFile;
+    avatarPreview.src = AVATAR_PLUG_FILE;
     removeAdPreviewImage();
 
     window.map.filters.removeEventListener('change', window.map.onFiltersChange);
@@ -142,7 +142,7 @@
     renderRequestPopup(RequestPopupType.ERROR);
   };
 
-  window.map.toggleEditable(window.map.bidElements, true);
+  window.map.toggleEditable(window.map.bidItems, true);
 
   bid.classList.add('ad-form--disabled');
 
@@ -250,5 +250,6 @@
     bid: bid,
     advertAdressField: advertAdressField,
     main: main,
+    popup: popup
   };
 })();
