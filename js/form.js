@@ -3,8 +3,7 @@
 (function () {
   var KEY_ESCAPE = 'Escape';
   var FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
-
-  var avatarPlugFile = 'img/muffin-grey.svg';
+  var AVATAR_PLUG_FILE = 'img/muffin-grey.svg';
 
   var RequestPopupType = {
     SUCCESS: 'success',
@@ -13,16 +12,16 @@
 
   var offerType = {
     ru: {
-      flat: 'Квартира',
-      bungalo: 'Бунгало',
-      house: 'Дом',
-      palace: 'Дворец',
+      'flat': 'Квартира',
+      'bungalo': 'Бунгало',
+      'house': 'Дом',
+      'palace': 'Дворец',
     },
     minPrice: {
-      flat: 1000,
-      bungalo: 0,
-      house: 5000,
-      palace: 10000,
+      'flat': 1000,
+      'bungalo': 0,
+      'house': 5000,
+      'palace': 10000,
     },
   };
 
@@ -39,16 +38,22 @@
   var advertAdressField = bid.querySelector('#address');
   var selectRoomNumber = bid.querySelector('#room_number');
   var selectCapacity = bid.querySelector('#capacity');
+  var popup = document.getElementsByClassName(RequestPopupType.SUCCESS);
 
   var avatarFile = bid.querySelector('#avatar');
   var avatarPreview = bid.querySelector('.ad-form-header__preview img');
-  var adFile = bid.querySelector('#images');
-  var adPreviewWrapper = bid.querySelector('.ad-form__photo');
+  var advertFile = bid.querySelector('#images');
+  var advertPreviewWrapper = bid.querySelector('.ad-form__photo');
+
+  var advertTypeSelect = bid.querySelector('#type');
+  var advertPriceInput = bid.querySelector('#price');
+  var timeInSelect = bid.querySelector('#timein');
+  var timeOutSelect = bid.querySelector('#timeout');
 
   var inactivateMap = function () {
 
-    window.map.toggleEditable(window.map.bidElements, true);
-    window.map.toggleEditable(window.map.filterElements, true);
+    window.map.toggleEditable(window.map.bidItems, true);
+    window.map.toggleEditable(window.map.filterItems, true);
 
     bid.classList.add('ad-form--disabled');
     window.map.element.classList.add('map--faded');
@@ -75,11 +80,13 @@
 
     advertAdressField.value = window.map.calculatePinLocation();
 
-    avatarPreview.src = avatarPlugFile;
+    avatarPreview.src = AVATAR_PLUG_FILE;
     removeAdPreviewImage();
 
     window.map.filters.removeEventListener('change', window.map.onFiltersChange);
     window.map.mainPin.addEventListener('keydown', window.map.onMainPinEnterPress);
+
+    window.map.mainPin.focus();
   };
 
   var onSelectRoomNumberChangeClick = function () {
@@ -135,7 +142,7 @@
     renderRequestPopup(RequestPopupType.ERROR);
   };
 
-  window.map.toggleEditable(window.map.bidElements, true);
+  window.map.toggleEditable(window.map.bidItems, true);
 
   bid.classList.add('ad-form--disabled');
 
@@ -146,18 +153,12 @@
 
   onSelectRoomNumberChangeClick();
 
-  var advertTypeSelect = bid.querySelector('#type');
-  var advertPriceInput = bid.querySelector('#price');
-
   var onAdvertTypeSelectChange = function () {
     advertPriceInput.min = offerType.minPrice[advertTypeSelect.value];
     advertPriceInput.placeholder = offerType.minPrice[advertTypeSelect.value];
   };
 
   advertTypeSelect.addEventListener('change', onAdvertTypeSelectChange);
-
-  var timeInSelect = bid.querySelector('#timein');
-  var timeOutSelect = bid.querySelector('#timeout');
 
   var changeTimeSelect = function (timeSelect, evt) {
     Array.from(timeSelect.options).forEach(function (option) {
@@ -216,15 +217,15 @@
     var adImage = document.createElement('img');
 
     adImage.alt = 'Превью фото жилья';
-    adImage.style.maxWidth = adPreviewWrapper.offsetWidth + 'px';
-    adImage.style.maxHeight = adPreviewWrapper.offsetHeight + 'px';
-    adPreviewWrapper.appendChild(adImage);
+    adImage.style.maxWidth = advertPreviewWrapper.offsetWidth + 'px';
+    adImage.style.maxHeight = advertPreviewWrapper.offsetHeight + 'px';
+    advertPreviewWrapper.appendChild(adImage);
 
     return bid.querySelector('.ad-form__photo img');
   };
 
-  adFile.addEventListener('change', function () {
-    var file = adFile.files[0];
+  advertFile.addEventListener('change', function () {
+    var file = advertFile.files[0];
     var fileName = file.name.toLowerCase();
 
     var matches = FILE_TYPES.some(function (it) {
@@ -249,5 +250,6 @@
     bid: bid,
     advertAdressField: advertAdressField,
     main: main,
+    popup: popup
   };
 })();

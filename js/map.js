@@ -14,6 +14,44 @@
 
   var DEBOUNCE_INTERVAL = 500;
 
+  var MainPin = {
+    START_X: 570,
+    START_Y: 375,
+    BIG_WIDTH: 65,
+    BIG_HEIGHT: 65,
+    SMALL_WIDTH: 65,
+    SMALL_HEIGHT: 84,
+
+    getBigLocation: function () {
+      return {
+        x: this.BIG_WIDTH / 2,
+        y: this.BIG_HEIGHT / 2,
+      };
+    },
+
+    getSmallLocation: function () {
+      return {
+        x: this.SMALL_WIDTH / 2,
+        y: this.SMALL_HEIGHT,
+      };
+    },
+  };
+
+  var filterPriceMap = {
+    'low': {
+      min: 0,
+      max: 10000
+    },
+    'middle': {
+      min: 10000,
+      max: 50000
+    },
+    'high': {
+      min: 50000,
+      max: Infinity
+    }
+  };
+
   var offers = [];
 
   var onError = function () {
@@ -42,39 +80,17 @@
     map.appendChild(popup);
   };
 
-  var MainPin = {
-    START_X: 570,
-    START_Y: 375,
-    BIG_WIDTH: 65,
-    BIG_HEIGHT: 65,
-    SMALL_WIDTH: 65,
-    SMALL_HEIGHT: 84,
-
-    getBigLocation: function () {
-      return {
-        x: this.BIG_WIDTH / 2,
-        y: this.BIG_HEIGHT / 2,
-      };
-    },
-
-    getSmallLocation: function () {
-      return {
-        x: this.SMALL_WIDTH / 2,
-        y: this.SMALL_HEIGHT,
-      };
-    },
-  };
-
   var map = document.querySelector('.map');
   var filtersContainer = map.querySelector('.map__filters-container');
   var filters = filtersContainer.querySelector('.map__filters');
-  var filterElements = filters.querySelectorAll('fieldset, select');
+  var filterItems = filters.querySelectorAll('fieldset, select');
   var mainPin = map.querySelector('.map__pin--main');
+  var filterFormItems = Array.from(filters.children);
   var pinTemplate = document.querySelector('#pin').content;
   var pinList = map.querySelector('.map__pins');
   var mapWidth = pinList.offsetWidth;
 
-  var bidElements = document.querySelectorAll('.ad-form fieldset, .ad-form select');
+  var bidItems = document.querySelectorAll('.ad-form fieldset, .ad-form select');
 
   var calculatePinLocation = function () {
     var leftGap = Number(mainPin.style.left.slice(0, -2));
@@ -137,14 +153,14 @@
     });
   };
 
-  var renderPins = function (parentElement, ads) {
+  var renderPins = function (parent, adverts) {
     var fragment = document.createDocumentFragment();
 
-    ads.forEach(function (ad) {
-      fragment.appendChild(createPin(ad));
+    adverts.forEach(function (advert) {
+      fragment.appendChild(createPin(advert));
     });
 
-    parentElement.appendChild(fragment);
+    parent.appendChild(fragment);
   };
 
   var checkMapState = function () {
@@ -230,17 +246,17 @@
     activateMap(evt);
   };
 
-  var debounce = function (fn, time) {
+  var debounce = function (perform, timeDelay) {
     var timeout;
 
     return function () {
       var parameters = arguments;
-      var fnCall = function () {
-        fn.apply(null, parameters);
+      var getPerformance = function () {
+        perform.apply(null, parameters);
       };
 
       clearTimeout(timeout);
-      timeout = setTimeout(fnCall, time);
+      timeout = setTimeout(getPerformance, timeDelay);
     };
   };
 
@@ -249,47 +265,30 @@
       return advert.hasOwnProperty('offer');
     });
     renderPins(pinList, offers.slice(0, MIN_COUNT));
-    toggleEditable(filterElements, false);
+    toggleEditable(filterItems, false);
 
     filters.addEventListener('change', debounce(onFiltersChange, DEBOUNCE_INTERVAL));
   };
 
-  var filterPriceMap = {
-    'low': {
-      min: 0,
-      max: 10000
-    },
-    'middle': {
-      min: 10000,
-      max: 50000
-    },
-    'high': {
-      min: 50000,
-      max: Infinity
-    }
-  };
-
-  var filterFormElement = Array.from(filters.children);
-
   var filterRules = {
-    'housing-type': function (advert, filterElement) {
-      return filterElement.value === advert.offer.type;
+    'housing-type': function (advert, filter) {
+      return filter.value === advert.offer.type;
     },
 
-    'housing-price': function (advert, filterElement) {
-      return advert.offer.price >= filterPriceMap[filterElement.value].min && advert.offer.price < filterPriceMap[filterElement.value].max;
+    'housing-price': function (advert, filter) {
+      return advert.offer.price >= filterPriceMap[filter.value].min && advert.offer.price < filterPriceMap[filter.value].max;
     },
 
-    'housing-rooms': function (advert, filterElement) {
-      return filterElement.value === advert.offer.rooms.toString();
+    'housing-rooms': function (advert, filter) {
+      return filter.value === advert.offer.rooms.toString();
     },
 
-    'housing-guests': function (advert, filterElement) {
-      return filterElement.value === advert.offer.guests.toString();
+    'housing-guests': function (advert, filter) {
+      return filter.value === advert.offer.guests.toString();
     },
 
-    'housing-features': function (advert, filterElement) {
-      var checkedFilterFeatures = Array.from(filterElement.querySelectorAll('input[type=checkbox]:checked'));
+    'housing-features': function (advert, filter) {
+      var checkedFilterFeatures = Array.from(filter.querySelectorAll('input[type=checkbox]:checked'));
 
       return checkedFilterFeatures.every(function (filterFeature) {
         return advert.offer.features.some(function (advertFeature) {
@@ -301,8 +300,8 @@
 
   var filterAdverts = function (adverts) {
     return adverts.filter(function (advert) {
-      return filterFormElement.every(function (filterElement) {
-        return (filterElement.value === 'any') ? true : filterRules[filterElement.id](advert, filterElement);
+      return filterFormItems.every(function (filter) {
+        return (filter.value === 'any') ? true : filterRules[filter.id](advert, filter);
       });
     });
   };
@@ -318,14 +317,14 @@
   };
 
   var activateMap = function (evt) {
-    if (evt.button === MOUSE_BUTTON_LEFT || evt.key === KEY_ENTER) {
+    if (evt.button === MOUSE_BUTTON_LEFT || (evt.key === KEY_ENTER && window.form.popup.length === 0)) {
       map.classList.remove('map--faded');
 
       window.backend.load(onSuccess, onError);
 
       window.form.bid.classList.remove('ad-form--disabled');
 
-      toggleEditable(bidElements, false);
+      toggleEditable(bidItems, false);
 
       window.form.advertAdressField.value = calculatePinLocation();
 
@@ -333,8 +332,8 @@
     }
   };
 
-  toggleEditable(filterElements, true);
-  toggleEditable(bidElements, true);
+  toggleEditable(filterItems, true);
+  toggleEditable(bidItems, true);
 
   mainPin.addEventListener('mousedown', onMainPinClick);
   mainPin.addEventListener('keydown', onMainPinEnterPress);
@@ -342,10 +341,10 @@
   window.map = {
     element: map,
     mainPin: mainPin,
-    bidElements: bidElements,
+    bidItems: bidItems,
     MainPin: MainPin,
     filters: filters,
-    filterElements: filterElements,
+    filterItems: filterItems,
     removePopup: removePopup,
     removePins: removePins,
     checkMapState: checkMapState,
