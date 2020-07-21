@@ -226,7 +226,7 @@
 
         setMainPinPosition(shift.x, shift.y);
 
-        window.form.advertAdressField.value = calculatePinLocation(MainPin, mainPin, false);
+        window.form.advertAdress.value = calculatePinLocation(MainPin, mainPin, false);
       };
 
       var onMouseUp = function (upEvt) {
@@ -326,7 +326,7 @@
 
       toggleEditable(bidItems, false);
 
-      window.form.advertAdressField.value = calculatePinLocation();
+      window.form.advertAdress.value = calculatePinLocation();
 
       mainPin.removeEventListener('keydown', onMainPinEnterPress);
     }

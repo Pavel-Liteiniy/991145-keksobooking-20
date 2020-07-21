@@ -35,7 +35,7 @@
   var main = document.querySelector('main');
   var bid = main.querySelector('.ad-form');
   var bidResetButton = bid.querySelector('.ad-form__reset');
-  var advertAdressField = bid.querySelector('#address');
+  var advertAdress = bid.querySelector('#address');
   var selectRoomNumber = bid.querySelector('#room_number');
   var selectCapacity = bid.querySelector('#capacity');
   var popup = document.getElementsByClassName(RequestPopupType.SUCCESS);
@@ -78,7 +78,7 @@
     window.map.mainPin.style.left = window.map.MainPin.START_X + 'px';
     window.map.mainPin.style.top = window.map.MainPin.START_Y + 'px';
 
-    advertAdressField.value = window.map.calculatePinLocation();
+    advertAdress.value = window.map.calculatePinLocation();
 
     avatarPreview.src = AVATAR_PLUG_FILE;
     removeAdPreviewImage();
@@ -146,8 +146,8 @@
 
   bid.classList.add('ad-form--disabled');
 
-  advertAdressField.readOnly = true;
-  advertAdressField.value = window.map.calculatePinLocation();
+  advertAdress.readOnly = true;
+  advertAdress.value = window.map.calculatePinLocation();
 
   selectRoomNumber.addEventListener('change', onSelectRoomNumberChangeClick);
 
@@ -248,7 +248,7 @@
   window.form = {
     offerType: offerType,
     bid: bid,
-    advertAdressField: advertAdressField,
+    advertAdress: advertAdress,
     main: main,
     popup: popup
   };
