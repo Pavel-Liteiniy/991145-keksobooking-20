@@ -129,8 +129,8 @@
     var pinButton = pin.querySelector('.map__pin');
     var pinAvatar = pin.querySelector('img');
 
-    pinButton.style.left = advert.location.x - PIN_WIDTH / 2 + 'px';
-    pinButton.style.top = advert.location.y - PIN_HEIGHT + 'px';
+    pinButton.style.left = `calc(${Math.random() * 100}% - ${PIN_WIDTH / 2}px)`;
+    pinButton.style.top = `calc(${Math.random() * 100}% - ${PIN_HEIGHT}px)`;
     pinAvatar.src = advert.author.avatar;
     pinAvatar.alt = advert.offer.title;
 
